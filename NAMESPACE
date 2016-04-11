@@ -1,2 +1,4 @@
 export(Pratchet, PrepareDataFitch, TBR, SPR, QuickNNI, PhyDat, InfoAmounts, Suboptimality)
 export(Bootstrap, TreeSearch, AddTip, DropTip, Renumber, BindTree, Root, SingleTaxonTree)
+export(RandomTree, RearrangeTree, DropTipNoSubtree, CollapseSingles, ExtractClade)
+export(Ancestors, AllAncestors, Descendants, DoDescendants)
