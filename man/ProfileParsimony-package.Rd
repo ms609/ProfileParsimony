@@ -36,20 +36,23 @@ as a test of the efficacy of Profile Parsimony.
 Martin R. Smith
 }
 \references{
-Congreve, C. R., & Lamsdell, J. C. (2016). \cite{Implied weighting and its utility in 
+\itemize{
+\item Congreve, C. R., & Lamsdell, J. C. (2016). \cite{Implied weighting and its utility in 
   palaeontological datasets: a study using modelled phylogenetic matrices.} Palaeontology, 
   online ahead of print. doi:10.1111/pala.12236
 
-Congreve, C. R., & Lamsdell, J. C. (2016). Data from: Implied weighting and its utility in 
+\item Congreve, C. R., & Lamsdell, J. C. (2016). Data from: Implied weighting and its utility in 
 palaeontological datasets: a study using modelled phylogenetic matrices. Dryad Digital
 Repository, \href{http://dx.doi.org/10.5061/dryad.7dq0j}{doi:10.5061/dryad.7dq0j}
 
-Faith, D. P. & Trueman, J. W. H. (2001). \cite{Towards an inclusive philosophy for phylogenetic
+\item Faith, D. P. & Trueman, J. W. H. (2001). \cite{Towards an inclusive philosophy for phylogenetic
 inference.} Systematic Biology 50:3, 331-350, doi:
 \href{http://dx.doi.org/10.1080/10635150118627}{10.1080/10635150118627}
 
-Smith, M. R. (201X). \cite{Trade-Offs between Resolution and Accuracy under Different Methods of
+\item Smith, M. R. (201X). \cite{Trade-Offs between Resolution and Accuracy under Different Methods of
 Phylogenetic Inference.} Syst. Biol. 
+
+}
 }
 \keyword{ package }
 \keyword{ tree }
