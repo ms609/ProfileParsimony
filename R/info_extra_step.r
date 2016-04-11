@@ -1,6 +1,52 @@
 RandomTrees <- memoise (function(N, n) unclass(rmtree(N, n)))
 NamedConstant <- function(X, name) {names(X) <- name; return(X)}
 
+
+LDFactorial <- memoize (function (x) {
+  # memoized version of phangorn::ldfactorial
+  x <- (x + 1) / 2
+  res <- lgamma(2 * x) - (lgamma(x) + (x - 1) * log(2))
+  res
+})
+LDFact <- (function (x) { # memoize
+  if (x < 2) return (0) 
+  if (x %% 2) {
+    LDFactorial(x)
+  } else {
+    lfactorial(x) - LDFactorial(x - 1L)
+  }
+})
+DFact <- function (x) exp(LDFact(x))
+DoubleFactorial <- function (x) {
+  x[] <- vapply(x, DFact, double(1))
+  x
+}
+
+NRooted <- n.monophyletic <- memoize(function (tips, extra=0) dfact(2*tips-3-extra) )
+NUnrooted1  <- memoize(function (tips, extra=0) dfact(2*tips-5-extra) )
+LnUnrooted1 <- memoize(function (tips, extra=0) ldfact(2*tips-5-extra))
+LnRooted   <- memoize(function (tips, extra=0) ldfact(2*tips-3-extra))
+LnUnrooted <- function (splits) {
+  if ((n.splits <- length(splits)) < 2) return (ln.unrooted.1(splits));
+  if (n.splits == 2) return (ln.rooted(splits[1]) + ln.rooted(splits[2]));
+  return (ln.unrooted.mult(splits))
+}
+NUnrooted <- function (splits) {
+  if ((n.splits <- length(splits)) < 2) return (NUnrooted1(splits));
+  if (n.splits == 2) return (NRooted(splits[1]) *  NRooted(splits[2]))
+  return ( n.unrooted.mult(splits))
+}
+LnUnrootedMult <- function (splits) { # Carter et al. 1990, Theorem 2
+  splits <- splits[splits > 0]
+  total.tips <- sum(splits)
+  ldfact(2 * total.tips - 5) - ldfact(2 * (total.tips - length(splits)) - 1) + sum(vapply(2 * splits - 3, ldfact, double(1)))
+}
+NUnrootedMult <- function (splits) {# Carter et al. 1990, Theorem 2
+  splits <- splits[splits > 0]
+  total.tips <- sum(splits)
+  round(dfact(2 * total.tips - 5) / dfact(2 * (total.tips - length(splits)) - 1) * prod(vapply(2 * splits - 3, dfact, double(1))))
+}
+
 ICSteps <- function (char, ambiguous.token = 0, expected.minima = 25, max.iter = 10000) {
   #char <- matrix(c(rep(1, split[1]), rep(2, split[2]), rep(4, split[3]), rep(8, split[4])), ncol=1)
   #data <- phyDat(char, 'USER', 0:3)
@@ -10,16 +56,16 @@ ICSteps <- function (char, ambiguous.token = 0, expected.minima = 25, max.iter =
   split <- sort(as.integer(table(char)))
   min.steps <- length(split) - 1
   if (min.steps == 0) return (NamedConstant(1, 0))
-  n.no.extra.steps <- n.unrooted.mult(split)
+  n.no.extra.steps <- NUnrootedMult(split)
   #n.one.extra.step <- WithOneExtraStep(split)
-  proportion.viable <- n.unrooted(n.char) / n.no.extra.steps
+  proportion.viable <- NUnrooted(n.char) / n.no.extra.steps
   if (proportion.viable == 1) {
     return(NamedConstant(1, min.steps))
   }
   n.iter <- min(max.iter, round(expected.minima * proportion.viable))
-  analytic.ic0 <- -log(n.no.extra.steps/n.unrooted(sum(split))) / log(2)
-  #analytic.ic1<- -log(n.one.extra.step/n.unrooted(sum(split))) / log(2)
-  #analytic.ic1<- -log((n.no.extra.steps + n.one.extra.step)/n.unrooted(sum(split))) / log(2)
+  analytic.ic0 <- -log(n.no.extra.steps/NUnrooted(sum(split))) / log(2)
+  #analytic.ic1<- -log(n.one.extra.step/NUnrooted(sum(split))) / log(2)
+  #analytic.ic1<- -log((n.no.extra.steps + n.one.extra.step)/NUnrooted(sum(split))) / log(2)
   cat(',')
   #cat(c(round(analytic.ic0, 3), 'bits @ 0 extra steps; attempting', n.iter, 'iterations.\n'))
   #cat(c(round(analytic.ic0, 3), 'bits @ 0 extra steps;', round(analytic.ic1, 3), '@ 1; attempting', n.iter, 'iterations.\n'))
@@ -43,8 +89,8 @@ ICSteps <- function (char, ambiguous.token = 0, expected.minima = 25, max.iter =
     ret
   }, double(1), char)
   ##table(steps)
-  analytic.steps <- n.iter * c(n.no.extra.steps) / n.unrooted(sum(split))
-  #analytic.steps <- n.iter * c(n.no.extra.steps, n.one.extra.step) / n.unrooted(sum(split))
+  analytic.steps <- n.iter * c(n.no.extra.steps) / NUnrooted(sum(split))
+  #analytic.steps <- n.iter * c(n.no.extra.steps, n.one.extra.step) / NUnrooted(sum(split))
   names(analytic.steps) <- min.steps
   #names(analytic.steps) <- min.steps + 0:1
   ##analytic.steps
@@ -72,7 +118,7 @@ WithOneExtraStep <- function (split) {
     omitted.tips <- split[omit]
     if (omitted.tips < 2) return (0)
     backbone.tips <- sum(backbone.splits)
-    backbones <- n.unrooted.mult(backbone.splits)
+    backbones <- NUnrootedMult(backbone.splits)
     backbone.edges <- max(0, 2 * backbone.tips - 3)
     backbone.attachments <- backbone.edges * (backbone.edges - 1)
     prod(sum( # Branch unambiguously split along first group
@@ -146,7 +192,7 @@ Evaluate <- function (tree, data) {
     ret[names(ret) != ambiguous.token] 
   })
   if (class(as.splits) == 'matrix') as.splits <- lapply(seq_len(ncol(as.splits)), function(i) as.splits[, i])
-  ic.max <- round(vapply(as.splits, function (split) -log(n.unrooted.mult(split)/n.unrooted(sum(split)))/log(2), double(1)), 12)
+  ic.max <- round(vapply(as.splits, function (split) -log(NUnrootedMult(split)/NUnrooted(sum(split)))/log(2), double(1)), 12)
   info.losses <- apply(chars, 1, ICSteps, ambiguous.token=ambiguous.token, max.iter=1000)
   info.amounts <- lapply(info.losses, function(p) {
     #cat(length(p))
@@ -173,7 +219,7 @@ Evaluate <- function (tree, data) {
   total.info <- sum(ic.max[index])
   info.misleading <- sum(info.lost[index])
   proportion.lost <- info.misleading / total.info
-  info.needed <- -log(1 / n.unrooted(length(data))) / log(2)
+  info.needed <- -log(1 / NUnrooted(length(data))) / log(2)
   info.overkill <- total.info / info.needed
   info.retained <- sum(info.used[index])
   signal.noise <- info.retained / info.misleading  # With FGH tree: 2.01908.  With pectinate 'basis' tree: 2.033188; calculated with exact values for 1-extra-step: 20.39106.
