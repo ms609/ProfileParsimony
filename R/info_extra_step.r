@@ -2,13 +2,13 @@ RandomTrees <- memoise (function(N, n) unclass(rmtree(N, n)))
 NamedConstant <- function(X, name) {names(X) <- name; return(X)}
 
 
-LDFactorial <- memoize (function (x) {
-  # memoized version of phangorn::LDFactorial
+LDFactorial <- memoise (function (x) {
+  # memoized version of phangorn::ldfactorial
   x <- (x + 1) / 2
   res <- lgamma(2 * x) - (lgamma(x) + (x - 1) * log(2))
   res
 })
-LDFact <- (function (x) { # memoize
+LDFact <- memoise(function (x) {
   if (x < 2) return (0) 
   if (x %% 2) {
     LDFactorial(x)
@@ -16,32 +16,33 @@ LDFact <- (function (x) { # memoize
     lfactorial(x) - LDFactorial(x - 1L)
   }
 })
-DFact <- function (x) exp(LDFact(x))
+DFact <- memoise(function (x) exp(LDFact(x)))
 DoubleFactorial <- function (x) {
   x[] <- vapply(x, DFact, double(1))
   x
 }
 
-NRooted <- n.monophyletic <- memoize(function (tips, extra=0) DFact(2*tips-3-extra) )
-NUnrooted1  <- memoize(function (tips, extra=0) DFact(2*tips-5-extra) )
+NRooted     <- memoize(function (tips, extra=0)  DFact(2*tips-3-extra))
+NUnrooted1  <- memoize(function (tips, extra=0)  DFact(2*tips-5-extra))
 LnUnrooted1 <- memoize(function (tips, extra=0) LDFact(2*tips-5-extra))
-LnRooted   <- memoize(function (tips, extra=0) LDFact(2*tips-3-extra))
+LnRooted    <- memoize(function (tips, extra=0) LDFact(2*tips-3-extra))
+
 LnUnrooted <- function (splits) {
-  if ((n.splits <- length(splits)) < 2) return (ln.unrooted.1(splits));
-  if (n.splits == 2) return (ln.rooted(splits[1]) + ln.rooted(splits[2]));
-  return (ln.unrooted.mult(splits))
+  if ((n.splits <- length(splits)) < 2) return (LnUnrooted1(splits));
+  if (n.splits == 2) return (LnRooted(splits[1]) + LnRooted(splits[2]));
+  return (LnUnrootedMult(splits))
 }
-NUnrooted <- function (splits) {
+NUnrooted  <- function (splits) {
   if ((n.splits <- length(splits)) < 2) return (NUnrooted1(splits));
   if (n.splits == 2) return (NRooted(splits[1]) *  NRooted(splits[2]))
-  return ( n.unrooted.mult(splits))
+  return ( NUnrootedMult(splits))
 }
 LnUnrootedMult <- function (splits) {  # Carter et al. 1990, Theorem 2
   splits <- splits[splits > 0]
   total.tips <- sum(splits)
   LDFact(2 * total.tips - 5) - LDFact(2 * (total.tips - length(splits)) - 1) + sum(vapply(2 * splits - 3, LDFact, double(1)))
 }
-NUnrootedMult <- function (splits) {  # Carter et al. 1990, Theorem 2
+NUnrootedMult  <- function (splits) {  # Carter et al. 1990, Theorem 2
   splits <- splits[splits > 0]
   total.tips <- sum(splits)
   round(DFact(2 * total.tips - 5) / DFact(2 * (total.tips - length(splits)) - 1) * prod(vapply(2 * splits - 3, DFact, double(1))))
@@ -222,7 +223,7 @@ Evaluate <- function (tree, data) {
   info.needed <- -log(1 / NUnrooted(length(data))) / log(2)
   info.overkill <- total.info / info.needed
   info.retained <- sum(info.used[index])
-  signal.noise <- info.retained / info.misleading  # With FGH tree: 2.01908.  With pectinate 'basis' tree: 2.033188; calculated with exact values for 1-extra-step: 20.39106.
+  signal.noise <- info.retained / info.misleading
   cat("\n", total.info, 'bits, of which', round(info.retained, 2), 'kept,', round(total.info - info.retained, 2), 'lost,', round(info.needed, 2), 'needed.  SNR =', signal.noise, "\n")
   return(c(signal.noise, info.retained/info.needed))
 }

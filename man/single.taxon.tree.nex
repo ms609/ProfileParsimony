@@ -1,0 +1,17 @@
+#NEXUS
+begin taxa;
+	dimensions ntax=0;
+	taxlabels
+	;
+end;
+begin trees;
+	tree tree1 = [&U] \alias{single.taxon.tree}
+	tree tree2 = [&U] \title{Single taxon tree}
+	tree tree3 = [&U] \description{Create a phylogenetic 'tree' that comprises a single taxon.}
+	tree tree4 = [&U] \usage{single.taxon.tree(label)}
+	tree tree5 = [&U] \arguments{  \item{label}{a character vector specifying the label of the tip.}}
+	tree tree6 = [&U] \value{This function returns a \code{phylo} object containing a single tip with the specified label.}
+	tree tree7 = [&U] \seealso{\code{\link{two.tip.tree}}}
+	tree tree8 = [&U] \examples{single.taxon.tree('Homo_sapiens')}
+
+end;

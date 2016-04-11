@@ -92,7 +92,7 @@ InfoAmounts <- function (data) {
   # The below is simplified from info_extra_step.r::evaluate
   chars  <- matrix(unlist(data), attr(data, 'nr'))
   splits <- apply(chars, 1, table)  # No ambiguous tokens to worry about
-  info.losses <- apply(splits, 2, ICPerStep, max.iter=10000)  ## TODO increase to 100000
+  info.losses <- apply(splits, 2, ICPerStep, max.iter=100000)
   ret <- lapply(info.losses, function(p) {
     cump <- cumsum(p)
     n.steps <- as.integer(names(p))
@@ -184,7 +184,7 @@ Pratchet <- function (tree, data, all=FALSE, outgroup=NULL, pratchiter=100, sear
     duplicated(forest)
     ret <- unique(forest)
     scores.unique <- vapply(ret, attr, double(1), 'score')
-    cat('Found', sum(scores.unique == min(scores.unique)), 'unique MPTs and', length(ret) - sum(scores.unique == min(scores.unique)), 'suboptimal trees.')
+    cat('Found', sum(scores.unique == min(scores.unique)), 'unique MPTs and', length(ret) - sum(scores.unique == min(scores.unique)), 'suboptimal trees.\n')
     if (is.null(outgroup)) warning('"outgroup" not specified, so some "unique" trees may have same topology but distinct roots.')
   } else {
     ret <- tree
