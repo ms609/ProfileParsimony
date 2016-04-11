@@ -6,6 +6,5 @@ Date: 2016-04-11
 Author: Martin R. Smith
 Maintainer: Martin R. Smith <martins@gmail.com>
 Description: Under development.
-Depends: ape, phangorn
-Extends: memoise
+Depends: ape, phangorn, memoise
 License: MIT
