@@ -137,7 +137,6 @@ FitchSite <- function (tree, data) {
   }
 }
 
-
 Evaluate <- function (tree, data) {
   total.steps <- FitchSite(tree, data)
   chars <- matrix(unlist(data), attr(data, 'nr'))

@@ -1083,5 +1083,16 @@ DropTip <- function(phy, tip, trim.internal = TRUE, subtree = FALSE, root.edge =
   collapse.singles.fast(phy)
 }
 
+RandomTree <- function (data, br=NULL) {
+  tips <- switch(class(data),
+    'phylo' = data$tip.label,
+    'phyDat' = names(data),
+    'fitchDat' = names(data),
+    stop('Data class not supported')
+  )
+  n.tips <- length(tips)
+  return(rtree(n.tips, tip.label=tips, br=br))
+}
+
 
 
