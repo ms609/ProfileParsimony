@@ -1129,7 +1129,7 @@ FitchInfoFast <- function (tree, data) {
                        length(parent) + 1L - match(allNodes, rev(parent)))]
   fitch <- .Call("FITCH", data[, tree$tip.label], as.integer(n.char),
         as.integer(parent), as.integer(child), as.integer(n.edge),
-        as.double(weight), as.integer(max.node), as.integer(n.tip), package='phangorn')
+        as.double(weight), as.integer(max.node), as.integer(n.tip))  # , package='phangorn')
 #
 #  Future support for inapplicable data to be added here:
 #  
