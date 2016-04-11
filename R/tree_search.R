@@ -359,9 +359,10 @@ SPR <- function(tree) {
   }
   
   reordered.edge <- .C('order_edges', as.integer(edge[,1]), as.integer(edge[,2]),
-                       as.integer(nTips-1L), as.integer(nEdge))
+                       as.integer(nTips-1L), as.integer(nEdge), PACKAGE='ProfileParsimony')
   numbered.edge <- .C('number_nodes', as.integer(reordered.edge[[1]]), 
-                      as.integer(reordered.edge[[2]]), as.integer(root), as.integer(nEdge))
+                      as.integer(reordered.edge[[2]]), as.integer(root), as.integer(nEdge), 
+                      PACKAGE='ProfileParsimony')
   tree$edge <- matrix(c(numbered.edge[[1]], numbered.edge[[2]]), ncol=2)
   tree
 }
