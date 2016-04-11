@@ -1128,9 +1128,11 @@ FitchInfoFast <- function (tree, data) {
   allNodes <- (n.tip + 1L):max.node
   child.of <- child [c(match(allNodes, parent),
                        length(parent) + 1L - match(allNodes, rev(parent)))]
-  fitch <- .Call("FITCH", data[, tree$tip.label], as.integer(n.char),
+  # Use PHANGORNFITCH, which is a copy of FITCH from phangorn's fitch.c, because using
+  # useDynLib(phangorn, FITCH) in the NAMESPACE file throws an intractable error.
+  fitch <- .Call("PHANGORNFITCH", data[, tree$tip.label], as.integer(n.char),
         as.integer(parent), as.integer(child), as.integer(n.edge),
-        as.double(weight), as.integer(max.node), as.integer(n.tip))# , package='phangorn')
+        as.double(weight), as.integer(max.node), as.integer(n.tip))
 #
 #  Future support for inapplicable data to be added here:
 #  
