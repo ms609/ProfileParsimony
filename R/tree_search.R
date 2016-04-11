@@ -115,7 +115,8 @@ Suboptimality <- function (trees) {
   return(scores - min(scores))
 }
 
-Pratchet <- function (tree, data, all=FALSE, outgroup=NULL, pratchiter=100, searchiter=5000, searchhits=40, k=10, track=0, rearrangements="NNI", suboptimal=0, ...) {
+Pratchet <- function (tree, data, all=FALSE, outgroup=NULL, pratchiter=100, searchiter=5000,
+                      searchhits=40, k=10, track=0, rearrangements="NNI", suboptimal=0, ...) {
   if (class(data) == 'phyDat') data <- PrepareDataFitch(data)
   if (class(data) != 'fitchDat') stop("data must be a phyDat object, or the output of PrepareDataFitch(phyDat object).")
   epsilon <- 1e-08
@@ -214,7 +215,8 @@ Bootstrap <- function (phy, x, maxiter, maxhits, track=1, ...) {
   res
 }
 
-TreeSearch <- function (tree, data, method='NNI', maxiter=100, maxhits=20, forest.size=1, cluster=NULL, track=1, ...) {
+TreeSearch <- function (tree, data, method='NNI', maxiter=100, maxhits=20, forest.size=1,
+                        cluster=NULL, track=1, ...) {
   tree$edge.length <- NULL # Edge lengths are not supported
   attr(tree, 'hits') <- 1
   if (exists("forest.size") && length(forest.size) && forest.size > 1) {
@@ -266,7 +268,8 @@ TreeSearch <- function (tree, data, method='NNI', maxiter=100, maxhits=20, fores
   }
 }
 
-RearrangeTree <- function (tree, data, rearrange, min.score=NULL, return.single=TRUE, iter='<unknown>', cluster=NULL, track=0) {
+RearrangeTree <- function (tree, data, rearrange, min.score=NULL, return.single=TRUE,
+                           iter='<unknown>', cluster=NULL, track=0) {
   if (is.null(attr(tree, 'score'))) best.score <- 1e+07 else best.score <- attr(tree, 'score')
   if (is.null(attr(tree, 'hits'))) hits <- 1 else hits <- attr(tree, 'hits')
   if (is.null(cluster)) {
@@ -410,7 +413,7 @@ TBR <- function(tree, edge.to.break=NULL) {
   Renumber(ret)
 }
 
-DropTipNoSubtree <- function(phy, tip, root.edge = 0, rooted = is.rooted(phy), interactive = FALSE) {
+DropTipNoSubtree <- function(phy, tip, root.edge = 0, rooted = is.rooted(phy)) {
 # Copied from ape:::drop.tip; edited to avoid excessive calls to $, and to support single-taxon trees.
 # Dropped support for branch lengths.
 # Dropped checks and warnings: assumed that data passed to this function is good!
@@ -663,7 +666,8 @@ Descendants <- function (tree, node, ...) {
   return (which(DoDescendants(edge1, edge2, nTip, node, ...)))
 }
 
-DoDescendants <- function (edge1, edge2, nTip, node, just.tips = FALSE, just.internal=FALSE, include.ancestor = FALSE) {
+DoDescendants <- function (edge1, edge2, nTip, node, just.tips = FALSE, just.internal=FALSE,
+                           include.ancestor = FALSE) {
   # ARGUMENTS:
   #   "edge1", parent nodes: from tree$edge[,1]
   #   "edge2", parent nodes: from tree$edge[,2]
@@ -973,7 +977,8 @@ BindTree <- function(x, y, where = "root", position = 0, interactive = FALSE) {
     x
 }
 
-DropTip <- function(phy, tip, trim.internal = TRUE, subtree = FALSE, root.edge = 0, rooted = is.rooted(phy), interactive = FALSE) {
+DropTip <- function(phy, tip, trim.internal = TRUE, subtree = FALSE, root.edge = 0,
+                    rooted = is.rooted(phy)) {
 # Copied from ape:::drop.tip; edited to avoid excessive calls to $, and to support single-taxon trees.
 # Dropped support for branch lengths.
   if (!inherits(phy, "phylo"))
@@ -1099,5 +1104,50 @@ RandomTree <- function (data, br=NULL) {
   return(rtree(n.tips, tip.label=tips, br=br))
 }
 
+
+FitchInfoFast <- function (tree, data) {
+    # Data
+  if (class(data) == 'phyDat') data <- PrepareDataFitch(data)
+  if (class(data) != 'fitchDat') stop('Invalid data type; try FitchInfoFast(tree, data <- 
+                                      PrepareDataFitch(valid.phyDat.object)).')
+  at <- attributes(data)
+  n.char  <- at$nr # strictly, transformation series patterns; these'll be upweighted later
+  weight <- at$weight
+  info <- at$info.amounts
+  if (is.null(at$order) || at$order == "cladewise") tree <- reorder(tree, "postorder")
+  tree.edge <- tree$edge
+  parent <- tree.edge[,1]
+  child <- tree.edge[,2]
+  tip.label <- tree$tip.label
+  n.edge <- length(parent)
+  max.node <- parent[1] #max(parent)
+  n.tip <- length(tip.label)
+  n.node <- max.node - n.tip
+  inapp <- at$inapp.level
+  parent.of <- parent[match((n.tip + 2L):max.node, child )]
+  allNodes <- (n.tip + 1L):max.node
+  child.of <- child [c(match(allNodes, parent),
+                       length(parent) + 1L - match(allNodes, rev(parent)))]
+  fitch <- .Call("FITCH", data[, tree$tip.label], as.integer(n.char), 
+        as.integer(parent), as.integer(child), as.integer(n.edge), 
+        as.double(weight), as.integer(max.node), as.integer(n.tip), package='phangorn')
+#
+#  Future support for inapplicable data to be added here:
+#  
+#  nLevel <- length(at$level)
+#  powers.of.2 <- 2L^c(0L:(nLevel - 1L))
+#  inapp.level <- which(at$levels == "-")
+#  applicable.tokens <- setdiff(powers.of.2, 2^(inapp.level - 1))
+#  fitch <- .Call("FITCHINAPP", data[, tip.label], as.integer(n.char), as.integer(parent),
+#                 as.integer(child), as.integer(parent.of), as.integer(child.of),
+#                 as.integer(n.edge), as.integer(n.node), as.double(weight),
+#                 as.integer(max.node), as.integer(n.tip), as.integer(inapp),
+#                 PACKAGE='inapplicable') 
+
+  steps <- fitch[[2]]
+  # Return a negative rather than positive value because algorithms assume that 
+  # smaller numbers are better
+  return(-sum(info[(steps - 1) * n.char + seq_len(n.char)] * weight))
+}
 
 
