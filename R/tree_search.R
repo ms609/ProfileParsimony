@@ -51,6 +51,11 @@ PhyDat <- function (data, levels = NULL, compress = TRUE, ...) {
   data
 }
 
+Min <- function (x, inapp.level) {
+  if (length(inapp.level)) return(sum(2^(c(0:(inapp.level-2), inapp.level:12)) %in% unique(x)))
+  return (sum(2^(0:12) %in% unique(x)))
+}
+
 PrepareDataFitch <- function (data) {
 # Written with reference to phangorn:::prepareDataFitch
   at <- attributes(data)
@@ -64,7 +69,7 @@ PrepareDataFitch <- function (data) {
   info <- array(0, dim=c(nChar, max.length))
   for (i in 1:nChar) info[i, 1:length(info.amounts[[i]])] <- info.amounts[[i]]
   at$names <- NULL
-  powers.of.2 <- 2L^c(0L:(nLevel - 1L))
+  powers.of.2 <- 2L ^ c(0L:(nLevel - 1L))
   tmp <- cont %*% powers.of.2
   tmp <- as.integer(tmp)
   data <- unlist(data, FALSE, FALSE)
@@ -74,9 +79,9 @@ PrepareDataFitch <- function (data) {
   inapp.level <- which(at$levels == "-")
   attr(ret, 'inapp.level') <- 2 ^ (inapp.level - 1)
   attr(ret, 'dim') <- c(nChar, nTip)  
-  attr(ret, 'unique.tokens') <- apply(ret, 1, function(x) quick.min(x, inapp.level))
-  applicable.tokens <- setdiff(powers.of.2, 2^(inapp.level - 1))
-  attr(ret, 'split.sizes') <- apply(ret, 1, function(x) vapply(applicable.tokens, function (y) sum(x==y), integer(1)))
+  attr(ret, 'unique.tokens') <- apply(ret, 1, function(x) Min(x, inapp.level))
+  applicable.tokens <- setdiff(powers.of.2, 2 ^ (inapp.level - 1))
+  attr(ret, 'split.sizes') <- apply(ret, 1, function(x) vapply(applicable.tokens, function (y) sum(x == y), integer(1)))
   attr(ret, 'info.amounts') <- info
   dimnames(ret) <- list(NULL, nam)
   class(ret) <- 'fitchDat'

@@ -6,7 +6,7 @@
 #' @format A list with 100 entries, each comprising a phyDat object of 55 characters for 22 taxa
 #'
 #' @source \url{http://datadryad.org/resource/doi:10.5061/dryad.7dq0j}
-"congreve.lamsdell.matrices"
+"congreveLamsdellMatrices"
 
 #' Tree topology for simulation
 #'
@@ -15,4 +15,4 @@
 #' @format A single phylogenetic tree saved as an object of class phylo
 #'
 #' @source \url{http://dx.doi.org/10.1111/pala.12236}
-"reference.tree"
+"referenceTree"
