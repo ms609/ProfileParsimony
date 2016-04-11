@@ -3,7 +3,7 @@ NamedConstant <- function(X, name) {names(X) <- name; return(X)}
 
 
 LDFactorial <- memoize (function (x) {
-  # memoized version of phangorn::ldfactorial
+  # memoized version of phangorn::LDFactorial
   x <- (x + 1) / 2
   res <- lgamma(2 * x) - (lgamma(x) + (x - 1) * log(2))
   res
@@ -22,10 +22,10 @@ DoubleFactorial <- function (x) {
   x
 }
 
-NRooted <- n.monophyletic <- memoize(function (tips, extra=0) dfact(2*tips-3-extra) )
-NUnrooted1  <- memoize(function (tips, extra=0) dfact(2*tips-5-extra) )
-LnUnrooted1 <- memoize(function (tips, extra=0) ldfact(2*tips-5-extra))
-LnRooted   <- memoize(function (tips, extra=0) ldfact(2*tips-3-extra))
+NRooted <- n.monophyletic <- memoize(function (tips, extra=0) DFact(2*tips-3-extra) )
+NUnrooted1  <- memoize(function (tips, extra=0) DFact(2*tips-5-extra) )
+LnUnrooted1 <- memoize(function (tips, extra=0) LDFact(2*tips-5-extra))
+LnRooted   <- memoize(function (tips, extra=0) LDFact(2*tips-3-extra))
 LnUnrooted <- function (splits) {
   if ((n.splits <- length(splits)) < 2) return (ln.unrooted.1(splits));
   if (n.splits == 2) return (ln.rooted(splits[1]) + ln.rooted(splits[2]));
@@ -36,15 +36,15 @@ NUnrooted <- function (splits) {
   if (n.splits == 2) return (NRooted(splits[1]) *  NRooted(splits[2]))
   return ( n.unrooted.mult(splits))
 }
-LnUnrootedMult <- function (splits) { # Carter et al. 1990, Theorem 2
+LnUnrootedMult <- function (splits) {  # Carter et al. 1990, Theorem 2
   splits <- splits[splits > 0]
   total.tips <- sum(splits)
-  ldfact(2 * total.tips - 5) - ldfact(2 * (total.tips - length(splits)) - 1) + sum(vapply(2 * splits - 3, ldfact, double(1)))
+  LDFact(2 * total.tips - 5) - LDFact(2 * (total.tips - length(splits)) - 1) + sum(vapply(2 * splits - 3, LDFact, double(1)))
 }
-NUnrootedMult <- function (splits) {# Carter et al. 1990, Theorem 2
+NUnrootedMult <- function (splits) {  # Carter et al. 1990, Theorem 2
   splits <- splits[splits > 0]
   total.tips <- sum(splits)
-  round(dfact(2 * total.tips - 5) / dfact(2 * (total.tips - length(splits)) - 1) * prod(vapply(2 * splits - 3, dfact, double(1))))
+  round(DFact(2 * total.tips - 5) / DFact(2 * (total.tips - length(splits)) - 1) * prod(vapply(2 * splits - 3, DFact, double(1))))
 }
 
 ICSteps <- function (char, ambiguous.token = 0, expected.minima = 25, max.iter = 10000) {

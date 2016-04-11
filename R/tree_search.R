@@ -87,7 +87,7 @@ InfoAmounts <- function (data) {
   # The below is modified from info_extra_step.r::evaluate
   chars  <- matrix(unlist(data), attr(data, 'nr'))
   splits <- apply(chars, 1, table) # No ambiguous tokens to worry about
-  info.losses <- apply(splits, 2, ICPerStep, max.iter=1000000)
+  info.losses <- apply(splits, 2, ICPerStep, max.iter=100000)
   ret <- lapply(info.losses, function(p) {
     cump <- cumsum(p)
     n.steps <- as.integer(names(p))
