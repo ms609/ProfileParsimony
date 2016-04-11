@@ -20,6 +20,9 @@ devtools::install_github('ms609/ProfileParsimony')
 library('inapplicable')
 ```
 
-## Reference
+## References
 D. P. Faith, J. W. H. Trueman, Towards an inclusive philosophy for phylogenetic inference.
-Syst. Biol. 50, 331�350 (2001).  <doi:10.1080/10635150118627>
+Syst. Biol. 50, 331–350 (2001).  <doi:10.1080/10635150118627>
+
+K. P. Schliep, phangorn: phylogenetic analysis in R. Bioinformatics. 27, 592–593 (2011).
+<doi:10.1093/bioinformatics/btq706>
