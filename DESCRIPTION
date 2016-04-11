@@ -7,4 +7,5 @@ Author: Martin R. Smith
 Maintainer: Martin R. Smith <martins@gmail.com>
 Description: Under development.
 Depends: ape, phangorn, memoise
+LazyData: true
 License: MIT

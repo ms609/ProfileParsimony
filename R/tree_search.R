@@ -1104,7 +1104,6 @@ RandomTree <- function (data, br=NULL) {
   return(rtree(n.tips, tip.label=tips, br=br))
 }
 
-
 FitchInfoFast <- function (tree, data) {
     # Data
   if (class(data) == 'phyDat') data <- PrepareDataFitch(data)
@@ -1128,8 +1127,8 @@ FitchInfoFast <- function (tree, data) {
   allNodes <- (n.tip + 1L):max.node
   child.of <- child [c(match(allNodes, parent),
                        length(parent) + 1L - match(allNodes, rev(parent)))]
-  fitch <- .Call("FITCH", data[, tree$tip.label], as.integer(n.char), 
-        as.integer(parent), as.integer(child), as.integer(n.edge), 
+  fitch <- .Call("FITCH", data[, tree$tip.label], as.integer(n.char),
+        as.integer(parent), as.integer(child), as.integer(n.edge),
         as.double(weight), as.integer(max.node), as.integer(n.tip), package='phangorn')
 #
 #  Future support for inapplicable data to be added here:
