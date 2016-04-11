@@ -2,7 +2,7 @@ library(memoise)
 ICPerStep <- function(splits, max.iter) ICS(min(splits), max(splits), max.iter)
 ICS <- memoize(function(a, b, m) ICSteps(c(rep(1, a), rep(2, b)), max.iter=m))
 
-## phangorn::phyDat has inexplicably stopped working.  Try to fix it.
+## phangorn::phyDat has inexplicably stopped working.  This function 'fixes' it
 ## For simplicity I have not retained support for contrast matrices or ambiguity.
 PhyDat <- function (data, levels = NULL, compress = TRUE, ...) {
   if (is.null(levels)) stop("Levels not supplied")
@@ -328,7 +328,7 @@ SPR <- function(tree) {
   pruning.candidates <- seq(nEdge + 1L)[-root]
   repeat {
     prune.node <- sample(pruning.candidates, 1)
-    moving.subnodes <- c(prune.node, which(do.descendants(parent, child, nTips, prune.node)))
+    moving.subnodes <- c(prune.node, which(DoDescendants(parent, child, nTips, prune.node)))
     moving.nodes <- c(prune.parent <- parent[child==prune.node], moving.subnodes)
     dont.graft.here <- c(moving.nodes, child[parent==prune.parent])
     graft.node <- c(pruning.candidates[!pruning.candidates %in% dont.graft.here])
@@ -358,8 +358,10 @@ SPR <- function(tree) {
     edge[c(leading.edge, sister.edge, graft.edge), 2] <- edge[c(sister.edge, graft.edge, leading.edge), 2]
   }
   
-  reordered.edge <- .C('order_edges', as.integer(edge[,1]), as.integer(edge[,2]), as.integer(nTips-1L), as.integer(nEdge), PACKAGE='inapplicable')
-  numbered.edge <- .C('number_nodes', as.integer(reordered.edge[[1]]), as.integer(reordered.edge[[2]]), as.integer(root), as.integer(nEdge), PACKAGE='inapplicable')
+  reordered.edge <- .C('order_edges', as.integer(edge[,1]), as.integer(edge[,2]),
+                       as.integer(nTips-1L), as.integer(nEdge))
+  numbered.edge <- .C('number_nodes', as.integer(reordered.edge[[1]]), 
+                      as.integer(reordered.edge[[2]]), as.integer(root), as.integer(nEdge))
   tree$edge <- matrix(c(numbered.edge[[1]], numbered.edge[[2]]), ncol=2)
   tree
 }
@@ -379,11 +381,11 @@ TBR <- function(tree, edge.to.break=NULL) {
   stump <- if (subtree.root <= nTips) {
     DropTipNoSubtree(tree, subtree.root, root.edge=1)
   } else {
-    in.crown <- do.descendants(tree.parent, tree.child, nTips, subtree.root, just.tips=TRUE)
+    in.crown <- DoDescendants(tree.parent, tree.child, nTips, subtree.root, just.tips=TRUE)
     DropTipNoSubtree(tree, which(in.crown), root.edge=1)
   }
   stump.len <- dim(stump$edge)[1]
-  crown <- ExtractClade(tree, subtree.root) # ~ 2x faster than DropTip
+  crown <- ExtractClade(tree, subtree.root)  # ~ 2x faster than DropTip
   crown.edge <- crown$edge
   crown.len <- dim(crown.edge)[1]  
   if (crown.len > 1) {
@@ -397,7 +399,12 @@ TBR <- function(tree, edge.to.break=NULL) {
       crown.root <- min(crown.parent)
       new.root.candidates <- crown.child[-1] # Include existing root once only
       new.root.node <- sample(new.root.candidates, 1L)
-      if (new.root.node <= crown.tips) new.outgroup <- new.root.node else new.outgroup <- which(do.descendants(crown.parent, crown.child, crown.tips, new.root.node, just.tips=TRUE))
+      new.outgroup <- if (new.root.node <= crown.tips) {
+        new.root.node 
+      } else {
+        which(DoDescendants(crown.parent, crown.child, crown.tips,
+                            new.root.node, just.tips=TRUE))
+      }
       rerooted.crown <- Root(crown, new.outgroup)
     }
     rerooted.crown$root.edge <- 1L
@@ -576,7 +583,7 @@ Root <- function (tree, outgroup) {
     } else { # Adding a node
       this.node.new.number <- max(c(nTips + 1, new.edges[, 2])) + 1
       new.edges[blank.edge, ] <- c(parent.number, this.node.new.number)    
-      descendant.nodes <- do.descendants(parent, child, nTips, old.tree.node)
+      descendant.nodes <- DoDescendants(parent, child, nTips, old.tree.node)
       n.new.nodes <- sum(descendant.nodes)
       fill.edge.index <- blank.edge + (1:n.new.nodes)
       fill.edge <- edge[child %in% which(descendant.nodes), ]
@@ -1128,11 +1135,9 @@ FitchInfoFast <- function (tree, data) {
   allNodes <- (n.tip + 1L):max.node
   child.of <- child [c(match(allNodes, parent),
                        length(parent) + 1L - match(allNodes, rev(parent)))]
-  # Use PHANGORNFITCH, which is a copy of FITCH from phangorn's fitch.c, because using
-  # useDynLib(phangorn, FITCH) in the NAMESPACE file throws an intractable error.
-  fitch <- .Call("PHANGORNFITCH", data[, tree$tip.label], as.integer(n.char),
+  fitch <- .Call("FITCH", data[, tree$tip.label], as.integer(n.char),
         as.integer(parent), as.integer(child), as.integer(n.edge),
-        as.double(weight), as.integer(max.node), as.integer(n.tip))
+        as.double(weight), as.integer(max.node), as.integer(n.tip), PACKAGE='phangorn')
 #
 #  Future support for inapplicable data to be added here:
 #  
