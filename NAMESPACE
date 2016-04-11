@@ -2,6 +2,4 @@ export(Pratchet, PrepareDataFitch, TBR, SPR, QuickNNI, PhyDat, InfoAmounts, Subo
 export(Bootstrap, TreeSearch, AddTip, DropTip, Renumber, BindTree, Root, SingleTaxonTree)
 export(RandomTree, RearrangeTree, DropTipNoSubtree, CollapseSingles, ExtractClade)
 export(Ancestors, AllAncestors, Descendants, DoDescendants)
-useDynLib(phangorn)
-useDynLib(fitch)
 useDynLib(phangorn, FITCH)
