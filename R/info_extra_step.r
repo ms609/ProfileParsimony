@@ -49,8 +49,6 @@ NUnrootedMult  <- function (splits) {  # Carter et al. 1990, Theorem 2
 }
 
 ICSteps <- function (char, ambiguous.token = 0, expected.minima = 25, max.iter = 10000) {
-  #char <- matrix(c(rep(1, split[1]), rep(2, split[2]), rep(4, split[3]), rep(8, split[4])), ncol=1)
-  #data <- phyDat(char, 'USER', 0:3)
   char <- matrix(2 ^ char[char != ambiguous.token], ncol = 1)
   n.char <- length(char)
   rownames(char) <- paste0('t', 1:n.char)
