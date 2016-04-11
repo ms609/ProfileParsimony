@@ -1,0 +1,11 @@
+Package: ProfileParsimony
+Type: Package
+Title: Phylogenetic Inference by Profile Parsimony
+Version: 0.00.000
+Date: 2016-04-11
+Author: Martin R. Smith
+Maintainer: Martin R. Smith <martins@gmail.com>
+Description: Under development.
+Depends: ape, phangorn
+Extends: memoise
+License: MIT
