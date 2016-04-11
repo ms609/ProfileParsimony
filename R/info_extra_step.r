@@ -87,7 +87,7 @@ ICSteps <- function (char, ambiguous.token = 0, expected.minima = 25, max.iter =
     ret <- result[[1]]
     ret
   }, double(1), char)
-  ##table(steps)
+
   analytic.steps <- n.iter * c(n.no.extra.steps) / NUnrooted(sum(split))
   #analytic.steps <- n.iter * c(n.no.extra.steps, n.one.extra.step) / NUnrooted(sum(split))
   names(analytic.steps) <- min.steps

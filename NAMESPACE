@@ -3,3 +3,4 @@ export(Bootstrap, TreeSearch, AddTip, DropTip, Renumber, BindTree, Root, SingleT
 export(RandomTree, RearrangeTree, DropTipNoSubtree, CollapseSingles, ExtractClade)
 export(ICSteps, NRooted, NUnrooted, LnRooted, LnUnrooted, LnUnrootedMult, LnRootedMult)
 export(Ancestors, AllAncestors, Descendants, DoDescendants)
+importFrom('phangorn', reorderPruning, fast.table)

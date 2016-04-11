@@ -33,7 +33,7 @@ Pratchet(tree, data, all = FALSE, outgroup = NULL, pratchiter = 100, searchiter 
   Cladistics, 15(4), 407-414. doi:\href{http://dx.doi.org/10.1111/j.1096-0031.1999.tb00277.x}{10.1111/j.1096-0031.1999.tb00277.x}
   
   Schliep, K. P. (2011). phangorn: phylogenetic analysis in R. Bioinformatics, 27(4), 592–593.
-  doi:\href{http://dx.doi/org/10.1093/bioinformatics/btq706}{10.1093/bioinformatics/btq706}
+  doi:\href{http://dx.doi.org/10.1093/bioinformatics/btq706}{10.1093/bioinformatics/btq706}
 }
 
 \author{
