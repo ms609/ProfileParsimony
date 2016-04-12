@@ -20,20 +20,31 @@ Pratchet(tree, data, all = FALSE, outgroup = NULL, pratchiter = 100, searchiter 
                     pratchet iteration;}
   \item{k}{stop when k ratchet iterations have found the same best score;}
   \item{track}{larger numbers provides more verbose feedback to the user;}
-  \item{rearrangements}{method to use when rearranging trees: 'NNI', 'SPR' or 'TBR' !!! 'TBR only' 'SPR only' !!!;}
+  \item{rearrangements}{method to use when rearranging trees (see below for details);}
   \item{suboptimal}{retain trees that are suboptimal by \code{suboptimal} bits;}
   \item{\dots}{other arguments to pass to subsequent functions.}
+}
+\details{
+  \code{rearrangements} takes one of the values \itemize{
+    \item 'NNI' : \link{NNI} rearrangements only
+    \item 'SPR only' : \link{SPR} rearrangements only
+    \item 'TBR only' : \link{TBR} rearrangements only
+    \item 'SPR' : SPR rearrangements followed by NNI
+    \item 'TBR' : TBR followed by SPR then NNI
+  }
 }
 \value{
   This function returns a tree modified by parsimony ratchet iterations,
   retaining the position of the root.
 }
 \references{
-  Nixon, K. C. (1999). \cite{The Parsimony Ratchet, a new method for rapid parsimony analysis.} 
+\itemize{
+ \item Nixon, K. C. (1999). \cite{The Parsimony Ratchet, a new method for rapid parsimony analysis.} 
   Cladistics, 15(4), 407-414. doi:\href{http://dx.doi.org/10.1111/j.1096-0031.1999.tb00277.x}{10.1111/j.1096-0031.1999.tb00277.x}
   
-  Schliep, K. P. (2011). phangorn: phylogenetic analysis in R. Bioinformatics, 27(4), 592–593.
+ \item Schliep, K. P. (2011). phangorn: phylogenetic analysis in R. Bioinformatics, 27(4), 592–593.
   doi:\href{http://dx.doi.org/10.1093/bioinformatics/btq706}{10.1093/bioinformatics/btq706}
+}
 }
 
 \author{

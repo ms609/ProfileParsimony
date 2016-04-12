@@ -1,3 +1,7 @@
+library(memoise)
+ICPerStep <- function(splits, max.iter) ICS(min(splits), max(splits), max.iter)
+ICS <- memoise(function(a, b, m) ICSteps(c(rep(1, a), rep(2, b)), max.iter=m))
+
 RandomTrees <- memoise (function(N, n) unclass(rmtree(N, n)))
 NamedConstant <- function(X, name) {names(X) <- name; return(X)}
 
@@ -22,10 +26,10 @@ DoubleFactorial <- function (x) {
   x
 }
 
-NRooted     <- memoize(function (tips, extra=0)  DFact(2*tips-3-extra))
-NUnrooted1  <- memoize(function (tips, extra=0)  DFact(2*tips-5-extra))
-LnUnrooted1 <- memoize(function (tips, extra=0) LDFact(2*tips-5-extra))
-LnRooted    <- memoize(function (tips, extra=0) LDFact(2*tips-3-extra))
+NRooted     <- memoise(function (tips, extra=0)  DFact(2*tips-3-extra))
+NUnrooted1  <- memoise(function (tips, extra=0)  DFact(2*tips-5-extra))
+LnUnrooted1 <- memoise(function (tips, extra=0) LDFact(2*tips-5-extra))
+LnRooted    <- memoise(function (tips, extra=0) LDFact(2*tips-3-extra))
 
 LnUnrooted <- function (splits) {
   if ((n.splits <- length(splits)) < 2) return (LnUnrooted1(splits));
@@ -65,10 +69,10 @@ ICSteps <- function (char, ambiguous.token = 0, expected.minima = 25, max.iter =
   analytic.ic0 <- -log(n.no.extra.steps/NUnrooted(sum(split))) / log(2)
   #analytic.ic1<- -log(n.one.extra.step/NUnrooted(sum(split))) / log(2)
   #analytic.ic1<- -log((n.no.extra.steps + n.one.extra.step)/NUnrooted(sum(split))) / log(2)
-  cat(',')
-  #cat(c(round(analytic.ic0, 3), 'bits @ 0 extra steps; attempting', n.iter, 'iterations.\n'))
-  #cat(c(round(analytic.ic0, 3), 'bits @ 0 extra steps;', round(analytic.ic1, 3), '@ 1; attempting', n.iter, 'iterations.\n'))
-  #if (n.iter == max.iter) warning("Truncated number of iterations at max.iter = ", max.iter)
+
+  cat(c(round(analytic.ic0, 3), 'bits @ 0 extra steps; attempting', n.iter, 'iterations.\n'))
+  cat(c(round(analytic.ic0, 3), 'bits @ 0 extra steps;', round(analytic.ic1, 3), '@ 1; attempting', n.iter, 'iterations.\n'))
+  if (n.iter == max.iter) warning ("Truncated number of iterations at max.iter = ", max.iter)
   trees <- RandomTrees(n.iter, n.char)
   steps <- vapply(trees, function (tree, char) {
     tree <- reorder(tree, "postorder")

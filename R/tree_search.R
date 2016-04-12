@@ -1,7 +1,3 @@
-library(memoise)
-ICPerStep <- function(splits, max.iter) ICS(min(splits), max(splits), max.iter)
-ICS <- memoize(function(a, b, m) ICSteps(c(rep(1, a), rep(2, b)), max.iter=m))
-
 ## Copied from phangorn file phyDat.R.  Edited for style only.
 FastTable <- function (data) {                                                                                 
   if(!is.data.frame(data)) {
@@ -409,7 +405,6 @@ TBR <- function(tree, edge.to.break=NULL) {
   root <- nTips + 1
   if (is.null(edge.to.break)) edge.to.break <- sample(2L:nrow(tree.edge), 1L) # Only include one root edge
   subtree.root <- tree.child[edge.to.break]
-  #cat("\n - ", edge.to.break, subtree.root)
   stump <- if (subtree.root <= nTips) {
     DropTipNoSubtree(tree, subtree.root, root.edge=1)
   } else {
@@ -647,8 +642,6 @@ Root <- function (tree, outgroup) {
       }
     }
     backward.edge <- child.index[this.node]
-#   cat("\n, this.node", this.node, "backward.edge", backward.edge, "match", match(this.node, child))  # For debugging only
-#   arrival.edge <- backward.edge; last.node.number <- this.node.new.number              # For debugging only
     if (!is.na(backward.edge)) new.edges <- visit.node.backwards(backward.edge, this.node.new.number, new.edges)
     new.edges
   }
@@ -1141,8 +1134,8 @@ ProfileScore <- function (tree, data) {
   info <- at$info.amounts
   if (is.null(at$order) || at$order == "cladewise") tree <- reorder(tree, "postorder")
   tree.edge <- tree$edge
-  parent <- tree.edge[,1]
-  child <- tree.edge[,2]
+  parent <- tree.edge[, 1]
+  child <- tree.edge[, 2]
   tip.label <- tree$tip.label
   n.edge <- length(parent)
   max.node <- parent[1] #max(parent)

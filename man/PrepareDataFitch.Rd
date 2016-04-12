@@ -1,12 +1,12 @@
-\name{prepare.data}
-\alias{prepare.data}
+\name{PrepareDataFitch}
+\alias{PrepareDataFitch}
 \title{Prepare phyDat object}
 \description{Prepares a \code{phyDat} object for analysis with \code{\link{fitch.inapp}}.}
 \usage{prepare.data(data)}
 \arguments{\item{data}{An object of class \code{\link{phyDat}}}}
 \details{Optimizes the \code{data} for efficient processing.}
 \value{
-   This function returns a matrix of class \code{*phyDat}.
+   This function returns a matrix of class \code{fitchDat}.
    \itemize{
 \item     Each column of the matrix corresponds to an operational taxonomic unit;
 \item     Each row of the matrix represents a transformation series;
