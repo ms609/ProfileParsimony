@@ -19,8 +19,8 @@ DoDescendants (parent, child, n.tips, node, just.tips = FALSE, just.internal = F
   \item{node}{the number of the node within a tree whose ancestors or descendants should be 
               listed, which might be identified using \code{\link{nodelabels}};}
   \item{n.tips}{the number of tips on the tree;}
-  \item{just.tips}{internal nodes are not listed if this is TRUE;}
-  \item{just.internal}{tips are not listed if this is TRUE (and just.tips is FALSE);}
+  \item{just.tips}{internal nodes are not listed if this is \kbd{TRUE};}
+  \item{just.internal}{tips are not listed if this is \kbd{TRUE}  (and just.tips is \kbd{FALSE});}
   \item{include.ancestor}{includes \code{node} in the output list;}  
   \item{\dots}{other arguments to pass to \code{DoDescendants}.}
 }
@@ -33,6 +33,7 @@ DoDescendants (parent, child, n.tips, node, just.tips = FALSE, just.internal = F
 \item {AllAncestors}{A list, each entry comprising a list of all nodes ancestral to each node in turn}
 \item {Descendants}{A vector containing descendant nodes in numerical order}
 \item {DoDescendants}{A logical vector listing whether each node is a descendant of \code{node}}
+}
 }
 
 \author{

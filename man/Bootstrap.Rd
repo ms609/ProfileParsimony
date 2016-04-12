@@ -1,7 +1,8 @@
-\name{TreeSearch}
-\alias{TreeSearch}
-\title{Search for most parsimonious trees}
-\description{Run standard search algorithms (\acronym{NNI}, \acronym{SPR} or \acronym{TBR}) to search for a more parsimonious tree.}
+\name{Bootstrap}
+\alias{Bootstrap}
+\title{Run a parsimony search on a bootstrapped dataset}
+\description{Bootstraps the characters from a dataset and runs a parsimony search.  
+Used to explore treespace in the Parsimony Ratchet algorithm (Nixon, 1999)}
 \usage{
 TreeSearch(tree, data, ParsimonyScorer = ProfileScore, outgroup, concavity = NULL, method = "NNI", maxiter = 100, 
   maxhits = 20, forest.size = 1, cluster = NULL, trace = 1, ...)
@@ -25,10 +26,23 @@ TreeSearch(tree, data, ParsimonyScorer = ProfileScore, outgroup, concavity = NUL
 }
 
 \value{
-This function returns a tree, with an attribute \code{pscore} conveying its parsimony score.
-Note that the parsimony score will be inherited from the tree's attributes, which is only valid if it 
-was generated using the same \code{data} that is passed here.
+This function returns a tree of class \code{phylo}.  Attributes 'score' and 'hits' will be 
+cleared, as the score is a function of the subsampled data and is unrelated to the score 
+produced under the original \code{data}.
 }
+\details{
+  Modified from the function in \code{phangorn}, with performance improvements.
+}
+\references{
+\itemize{
+ \item Nixon, K. C. (1999). \cite{The Parsimony Ratchet, a new method for rapid parsimony analysis.} 
+  Cladistics, 15(4), 407-414. doi:\href{http://dx.doi.org/10.1111/j.1096-0031.1999.tb00277.x}{10.1111/j.1096-0031.1999.tb00277.x}
+  
+ \item Schliep, K. P. (2011). phangorn: phylogenetic analysis in R. Bioinformatics, 27(4), 592-593.
+  doi:\href{http://dx.doi.org/10.1093/bioinformatics/btq706}{10.1093/bioinformatics/btq706}
+}
+}
+
 \author{
 Martin R. Smith
 }
@@ -36,17 +50,10 @@ Martin R. Smith
 \itemize{
 \item \code{\link{ProfileScore}}, calculates parsimony score;
 \item \code{\link{NNI}}, conducts tree rearrangements;
+\item \code{\link{TreeSearch}}, used to search for optimal trees;
 \item \code{\link{Pratchet}}, alternative heuristic, useful to escape local optima.
 }}
 \examples{
-data('congreveLamsdellMatrices')
-my.data <- congreveLamsdellMatrices[[1]]
-njtree <- root(nj(dist.hamming(my.data)), outgroup, resolve.root=TRUE)
-njtree$edge.length <- NULL
-\dontrun{
-TreeSearch(njtree, PrepareDataFitch(my.data), outgroup='1', maxiter=20, method='NNI')
-TreeSearch(njtree, PrepareDataFitch(my.data), outgroup='1', maxiter=20, method='SPR')
-TreeSearch(njtree, PrepareDataFitch(my.data), outgroup='1', maxiter=20, method='TBR')}
-}
+
 
 \keyword{ tree }

@@ -229,11 +229,11 @@ Evaluate <- function (tree, data) {
   return(c(signal.noise, info.retained/info.needed))
 }
 
-InfoAmounts <- function (data) {
+InfoAmounts <- function (data, precision=400000) {
   # The below is simplified from info_extra_step.r::evaluate
   chars  <- matrix(unlist(data), attr(data, 'nr'))
   splits <- apply(chars, 1, table)  # No ambiguous tokens to worry about
-  info.losses <- apply(splits, 2, ICPerStep, max.iter=400000)
+  info.losses <- apply(splits, 2, ICPerStep, max.iter=precision)
   ret <- lapply(info.losses, function(p) {
     cump <- cumsum(p)
     n.steps <- as.integer(names(p))

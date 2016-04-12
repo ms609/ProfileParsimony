@@ -1,17 +1,18 @@
-RearrangeTree <- function (tree, data, rearrange, min.score=NULL, return.single=TRUE,
-                           iter='<unknown>', cluster=NULL, track=0) {
+RearrangeTree <- function (tree, data, Rearrange = NNI, ParsimonyScorer = ProfileScore, 
+                           min.score=NULL, return.single=TRUE, iter='<unknown>', cluster=NULL,
+                           track=0) {
   if (is.null(attr(tree, 'score'))) best.score <- 1e+07 else best.score <- attr(tree, 'score')
   if (is.null(attr(tree, 'hits'))) hits <- 1 else hits <- attr(tree, 'hits')
   if (is.null(cluster)) {
-    re.tree <- rearrange(tree)
+    re.tree <- Rearrange(tree)
     trees <- list(re.tree)
-    min.score <- ProfileScore(re.tree, data)
+    min.score <- ParsimonyScorer(re.tree, data)
     best.trees <- c(TRUE)
   } else {
-    #candidates <- clusterCall(cluster, function(re, tr, k) {ret <- re(tr); attr(ret, 'score') <- ProfileScore(ret, cl.data, k); ret}, rearrange, tree)
+    #candidates <- clusterCall(cluster, function(re, tr, k) {ret <- re(tr); attr(ret, 'score') <- ParsimonyScorer(ret, cl.data, k); ret}, Rearrange, tree)
     #scores <- vapply(candidates, function(x) attr(x, 'ps'), 1)
-    candidates <- clusterCall(cluster, rearrange, tree)
-    scores <- vapply(candidates, ProfileScore, 1, data, target=min.score) # ~3x faster to do this in serial in r233.
+    candidates <- clusterCall(cluster, Rearrange, tree)
+    scores <- vapply(candidates, ParsimonyScorer, 1, data, target=min.score) # ~3x faster to do this in serial in r233.
     min.score <- min(scores)
     best.trees <- scores == min.score
     trees <- candidates[best.trees]
@@ -30,6 +31,7 @@ RearrangeTree <- function (tree, data, rearrange, min.score=NULL, return.single=
   attr(trees, 'score') <- min.score
   trees
 }
+
 DropTipNoSubtree <- function(phy, tip, root.edge = 0, rooted = is.rooted(phy)) {
 # Copied from ape:::drop.tip; edited to avoid excessive calls to $, and to support single-taxon trees.
 # Dropped support for branch lengths.

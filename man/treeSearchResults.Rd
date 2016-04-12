@@ -24,6 +24,7 @@ lapply(congreveLamsdellMatrices, function (data) {
   Pratchet(RandomTree(data), PrepareDataFitch(data), all=TRUE, outgroup='1', suboptimal=24,
            k=100, searchhits=50, searchiter=5000, pratchiter=5000, rearrangements='TBR')
 })
+}
 \references{
 \itemize{
 \item Congreve, C. R., & Lamsdell, J. C. (2016). \cite{Implied weighting and its utility in 

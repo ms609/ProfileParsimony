@@ -28,9 +28,8 @@ AllAncestors <- function (parent, child) {
 
 Descendants <- function (tree, node, ...) {
 # ARGUMENTS:
-#   "tree", a phydat object
+#   "tree", object of class phylo
 #   "node", number of an internal node
-#   "just.tips", should return value include all nodes or just tips?
 # RETURN:
 #   vector containing descendant nodes in numerical order
   nTip <- length(tree$tip.label)
@@ -40,24 +39,24 @@ Descendants <- function (tree, node, ...) {
   return (which(DoDescendants(edge1, edge2, nTip, node, ...)))
 }
 
-DoDescendants <- function (edge1, edge2, nTip, node, just.tips = FALSE, just.internal = FALSE,
+DoDescendants <- function (parent, child, n.tips, node, just.tips = FALSE, just.internal = FALSE,
                            include.ancestor = FALSE) {
   # ARGUMENTS:
-  #   "edge1", parent nodes: from tree$edge[,1]
-  #   "edge2", parent nodes: from tree$edge[,2]
+  #   "parent", parent nodes: from tree$edge[,1]
+  #   "child", parent nodes: from tree$edge[,2]
   #   "node", number of an internal node
   #   "just.tips", should return value include all nodes or just tips?
   # RETURN:
   #   vector containing descendant nodes in numerical order
-  is.descendant <- blank <- logical((nTip * 2) - 1)
+  is.descendant <- blank <- logical((n.tips * 2) - 1)
   if (include.ancestor) is.descendant[node] <- TRUE;
   node.children <- function (node, is.descendant) {
-    nc <- edge2[edge1 %in% node]
+    nc <- child[parent %in% node]
     is.descendant[nc] <- TRUE
     if (length(nc)) is.descendant <- node.children(nc, is.descendant)
     is.descendant
   }
   is.descendant <- node.children(node, is.descendant)
-  if (just.tips) return (is.descendant[1:nTip]) else if (just.internal) is.descendant[1:nTip] <- FALSE 
+  if (just.tips) return (is.descendant[1:n.tips]) else if (just.internal) is.descendant[1:n.tips] <- FALSE 
   return (is.descendant)
 }

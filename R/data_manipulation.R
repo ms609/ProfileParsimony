@@ -71,7 +71,7 @@ Min <- function (x, inapp.level) {
   return (sum(2^(0:12) %in% unique(x)))
 }
 
-PrepareDataFitch <- function (data) {
+PrepareDataFitch <- function (data, precision = 400000) {
 # Written with reference to phangorn:::prepareDataFitch
   at <- attributes(data)
   nam <- at$names
@@ -79,7 +79,7 @@ PrepareDataFitch <- function (data) {
   nChar <- at$nr
   cont <- attr(data, "contrast")
   nTip <- length(data)
-  info.amounts <- InfoAmounts(data)
+  info.amounts <- InfoAmounts(data, precision)
   max.length <- max(vapply(info.amounts, length, integer(1)))
   info <- array(0, dim=c(nChar, max.length))
   for (i in 1:nChar) info[i, 1:length(info.amounts[[i]])] <- info.amounts[[i]]

@@ -3,12 +3,13 @@ Suboptimality <- function (trees) {
   return(scores - min(scores))
 }
 
-Pratchet <- function (tree, data, all=FALSE, outgroup=NULL, pratchiter=100, searchiter=5000,
-                      searchhits=40, k=10, track=0, rearrangements="NNI", suboptimal=0, ...) {
+Pratchet <- function (tree, data, ParsimonyScorer=ProfileScore, all=FALSE, outgroup=NULL, 
+                      pratchiter=100, searchiter=5000, searchhits=40, pratchhits=10, track=0, 
+                      rearrangements="NNI", suboptimal=0, ...) {
   if (class(data) == 'phyDat') data <- PrepareDataFitch(data)
   if (class(data) != 'fitchDat') stop("data must be a phyDat object, or the output of PrepareDataFitch(phyDat object).")
   epsilon <- 1e-08
-  if (is.null(attr(tree, "score"))) attr(tree, "score") <- ProfileScore(tree, data)
+  if (is.null(attr(tree, "score"))) attr(tree, "score") <- ParsimonyScorer(tree, data)
   best.score <- attr(tree, "score")
   if (track >= 0) cat("\n* Initial score:", best.score)
   if (all) {
@@ -20,22 +21,27 @@ Pratchet <- function (tree, data, all=FALSE, outgroup=NULL, pratchiter=100, sear
   kmax <- 0
   for (i in 1:pratchiter) {
     if (track >= 0) cat ("\n - Running NNI on bootstrapped dataset. ")
-    bstree <- Bootstrap(phy=tree, x=data, maxiter=searchiter, maxhits=searchhits, track=track - 1, ...)
+    bstree <- Bootstrap(phy=tree, x=data, maxiter=searchiter, maxhits=searchhits,
+                        ParsimonyScorer=ParsimonyScorer,  track=track - 1
+                        , ...
+                        )
     
     if (track >= 0) cat ("\n - Running", ifelse(is.null(rearrangements), "NNI", rearrangements), "from new candidate tree:")
     if (rearrangements == "TBR") {
-      candidate <- TreeSearch(bstree,    data, method='TBR', track=track, maxiter=searchiter, maxhits=searchhits, ...)
-      candidate <- TreeSearch(candidate, data, method='SPR', track=track, maxiter=searchiter, maxhits=searchhits, ...)
-      candidate <- TreeSearch(candidate, data, method='NNI', track=track, maxiter=searchiter, maxhits=searchhits, ...)
+      candidate <- TreeSearch(bstree,    data, ParsimonyScorer=ParsimonyScorer, method='TBR', track=track, maxiter=searchiter, maxhits=searchhits, ...)
+      candidate <- TreeSearch(candidate, data, ParsimonyScorer=ParsimonyScorer, method='SPR', track=track, maxiter=searchiter, maxhits=searchhits, ...)
+      candidate <- TreeSearch(candidate, data, ParsimonyScorer=ParsimonyScorer, method='NNI', track=track, maxiter=searchiter, maxhits=searchhits, ...)
     } else if (rearrangements == "TBR only") {  
-      candidate <- TreeSearch(bstree,    data, method='TBR', track=track, maxiter=searchiter, maxhits=searchhits, ...)
+      candidate <- TreeSearch(bstree,    data, ParsimonyScorer=ParsimonyScorer, method='TBR', track=track, maxiter=searchiter, maxhits=searchhits, ...)
     } else if (rearrangements == "SPR") {       
-      candidate <- TreeSearch(bstree,    data, method='SPR', track=track, maxiter=searchiter, maxhits=searchhits, ...)
-      candidate <- TreeSearch(candidate, data, method='NNI', track=track, maxiter=searchiter, maxhits=searchhits, ...)
+      candidate <- TreeSearch(bstree,    data, ParsimonyScorer=ParsimonyScorer, method='SPR', track=track, maxiter=searchiter, maxhits=searchhits, ...)
+      candidate <- TreeSearch(candidate, data, ParsimonyScorer=ParsimonyScorer, method='NNI', track=track, maxiter=searchiter, maxhits=searchhits, ...)
     } else if (rearrangements == "SPR only") {  
-      candidate <- TreeSearch(bstree,    data, method='SPR', track=track, maxiter=searchiter, maxhits=searchhits, ...)
+      candidate <- TreeSearch(bstree,    data, ParsimonyScorer=ParsimonyScorer, method='SPR', track=track, maxiter=searchiter, maxhits=searchhits, ...)
     } else {                                    
-      candidate <- TreeSearch(bstree,    data, method='NNI', track=track, maxiter=searchiter, maxhits=searchhits, ...)
+      candidate <- TreeSearch(bstree,    data, ParsimonyScorer=ParsimonyScorer, method='NNI', track=track, maxiter=searchiter, maxhits=searchhits
+      , ...
+      )
     }
     cand.score <- attr(candidate, 'score')
     if ((cand.score + epsilon) < best.score) {
@@ -58,17 +64,17 @@ Pratchet <- function (tree, data, all=FALSE, outgroup=NULL, pratchiter=100, sear
       forest[[i]] <- if (is.null(outgroup)) candidate else Root(candidate, outgroup)
       forest.scores[i] <- cand.score
     }
-    if (track >= 0) cat("\n* Best score after", i, "/", pratchiter, "pratchet iterations:", best.score, "( hit", kmax, "/", k, ")")
-    if (kmax >= k) break()
+    if (track >= 0) cat("\n* Best score after", i, "/", pratchiter, "pratchet iterations:", best.score, "( hit", kmax, "/", pratchhits, ")")
+    if (kmax >= pratchhits) break()
   } # end for
-  if (track >= 0) cat ("\nCompleted parsimony ratchet with score", best.score, "\n")
+  if (track >= 0) cat ("\nCompleted parsimony ratchet after", i, "iterations with score", best.score, "\n")
     
   if (all) {
     keepers <- forest.scores < best.score + suboptimal
+    if (i < pratchiter) keepers[(i + 1):pratchiter] <- FALSE
     forest.scores <- forest.scores[keepers]
     forest <- forest[keepers]
     class(forest) <- 'multiPhylo'
-    duplicated(forest)
     ret <- unique(forest)
     scores.unique <- vapply(ret, attr, double(1), 'score')
     cat('Found', sum(scores.unique == min(scores.unique)), 'unique MPTs and', length(ret) - sum(scores.unique == min(scores.unique)), 'suboptimal trees.\n')
@@ -80,7 +86,7 @@ Pratchet <- function (tree, data, all=FALSE, outgroup=NULL, pratchiter=100, sear
   return (ret)
 }
   
-Bootstrap <- function (phy, x, maxiter, maxhits, track=1, ...) {
+Bootstrap <- function (phy, x, maxiter, maxhits, ParsimonyScorer = ProfileScore, track=1, ...) {
 ## Simplified version of phangorn::bootstrap.phyDat, with bs=1 and multicore=FALSE
   at <- attributes(x)
   weight <- at$weight
@@ -93,18 +99,21 @@ Bootstrap <- function (phy, x, maxiter, maxhits, track=1, ...) {
   attr(x, 'min.steps') <- at$min.steps[keep]
   attr(x, 'info.amounts') <- at$info.amounts[keep, ]
   attr(x, 'unique.tokens') <- at$unique.tokens[keep]
+  attr(x, 'sa.weights') <- at$sa.weights[keep]
   attr(x, 'nr') <- length(ind)
   attr(x, 'inapp.level') <- at$inapp.level
   attr(phy, 'score') <- NULL
   class(x) <- 'fitchDat'
-  res <- TreeSearch(phy, x, method='NNI', maxiter=maxiter, maxhits=maxhits, track=track-1, ...)
+  res <- TreeSearch(phy, x, ParsimonyScorer=ParsimonyScorer, method='NNI', maxiter=maxiter,
+                    maxhits=maxhits, track=track-1, ...)
   attr(res, 'score') <- NULL
   attr(res, 'hits') <- NULL
   res
 }
 
-TreeSearch <- function (tree, data, method='NNI', maxiter=100, maxhits=20, forest.size=1,
-                        cluster=NULL, track=1, ...) {
+TreeSearch <- function (tree, data, ParsimonyScorer = ProfileScore,  method = 'NNI', 
+                        maxiter = 100, maxhits = 20, forest.size = 1,
+                        cluster = NULL, track = 1, ...) {
   tree$edge.length <- NULL # Edge lengths are not supported
   attr(tree, 'hits') <- 1
   if (exists("forest.size") && length(forest.size) && forest.size > 1) {
@@ -113,14 +122,15 @@ TreeSearch <- function (tree, data, method='NNI', maxiter=100, maxhits=20, fores
   } else {
     forest.size <- 1 
   }
-  if (is.null(attr(tree, 'score'))) attr(tree, 'score') <- ProfileScore(tree, data)
+  if (is.null(attr(tree, 'score'))) attr(tree, 'score') <- ParsimonyScorer(tree, data)
   best.score <- attr(tree, 'score')
   if (track > 0) cat("\n  - Performing", method, "search.  Initial score:", best.score)
-  rearrange.func <- switch(method, 'TBR' = TBR, 'SPR' = SPR, 'NNI' = NNI)
+  Rearrange <- switch(method, 'TBR' = TBR, 'SPR' = SPR, 'NNI' = NNI)
   return.single <- !(forest.size > 1)
   
   for (iter in 1:maxiter) {
-    trees <- RearrangeTree(tree, data, rearrange.func, min.score=best.score, return.single=return.single, iter=iter, cluster=cluster, track=track)
+    trees <- RearrangeTree(tree, data, Rearrange, ParsimonyScorer, min.score=best.score,
+                           return.single=return.single, iter=iter, cluster=cluster, track=track)
     iter.score <- attr(trees, 'score')
     if (length(forest.size) && forest.size > 1) {
       hits <- attr(trees, 'hits')
@@ -287,12 +297,8 @@ TBR <- function(tree, edge.to.break=NULL) {
   Renumber(ret)
 }
 
-ProfileScore <- function (tree, data) {
-    # Data
-  if (class(data) == 'phyDat') data <- PrepareDataFitch(data)
-  if (class(data) != 'fitchDat') stop('Invalid data type; try ProfileScore(tree, data <- 
-                                      PrepareDataFitch(valid.phyDat.object)).')
-  at <- attributes(data)
+Fitch <- function (tree, data, at = NULL) {
+  if (is.null(at)) at <- attributes(data)
   n.char  <- at$nr # strictly, transformation series patterns; these'll be upweighted later
   weight <- at$weight
   info <- at$info.amounts
@@ -313,6 +319,7 @@ ProfileScore <- function (tree, data) {
   fitch <- .Call("FITCH", data[, tree$tip.label], as.integer(n.char),
         as.integer(parent), as.integer(child), as.integer(n.edge),
         as.double(weight), as.integer(max.node), as.integer(n.tip), PACKAGE='phangorn')
+  return(fitch[[2]])
 #
 #  Future support for inapplicable data to be added here:
 #  
@@ -325,11 +332,32 @@ ProfileScore <- function (tree, data) {
 #                 as.integer(n.edge), as.integer(n.node), as.double(weight),
 #                 as.integer(max.node), as.integer(n.tip), as.integer(inapp),
 #                 PACKAGE='inapplicable') 
+}
 
-  steps <- fitch[[2]]
+ProfileScore <- function (tree, data) {
+    # Data
+  if (class(data) == 'phyDat') data <- PrepareDataFitch(data)
+  if (class(data) != 'fitchDat') stop('Invalid data type; try ProfileScore(tree, data <- 
+                                      PrepareDataFitch(valid.phyDat.object)).')
+  at <- attributes(data)
+  n.char  <- at$nr # strictly, transformation series patterns; these'll be upweighted later
+  weight <- at$weight
+  steps <- Fitch(tree, data, at)
   # Return a negative rather than positive value because algorithms assume that 
   # smaller numbers are better
   return(-sum(info[(steps - 1) * n.char + seq_len(n.char)] * weight))
 }
 
-
+SuccessiveWeights <- function(tree, data) {
+  # Data
+  if (class(data) == 'phyDat') data <- PrepareDataFitch(data)
+  if (class(data) != 'fitchDat') {
+    stop('Invalid data type; prepare data with PhyDat() or PrepareDataFitch().')
+  }
+  at <- attributes(data)
+  weight <- at$weight
+  sa.weights <- at$sa.weights
+  if (is.null(sa.weights)) sa.weights <- rep(1, length(weight))
+  steps <- Fitch(tree, data, at)
+  return(sum(steps * sa.weights * weight))
+}

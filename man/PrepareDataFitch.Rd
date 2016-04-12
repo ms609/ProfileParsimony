@@ -2,8 +2,13 @@
 \alias{PrepareDataFitch}
 \title{Prepare phyDat object}
 \description{Prepares a \code{phyDat} object for analysis with \code{\link{fitch.inapp}}.}
-\usage{prepare.data(data)}
-\arguments{\item{data}{An object of class \code{\link{phyDat}}}}
+\usage{prepare.data(data, precision = 400000)}
+\arguments{
+  \item{data}{An object of class \code{\link{phyDat}};}
+  \item{precision}{integer stating the number of iterations to use when determining
+                  information content of additional steps.  Set low if not planning to use 
+                  \code{\link{ProfileScore}}, for speed.}
+  }
 \details{Optimizes the \code{data} for efficient processing.}
 \value{
    This function returns a matrix of class \code{fitchDat}.

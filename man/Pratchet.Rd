@@ -4,7 +4,7 @@
 \description{This function uses the parsimony ratchet (Nixon 1999) to search for a more parsimonious tree.}
 \usage{
 Pratchet(tree, data, all = FALSE, outgroup = NULL, pratchiter = 100, searchiter = 5000,
-         searchhits = 40, k = 10, track = 0, rearrangements = "NNI", suboptimal = 0, ...) 
+         searchhits = 40, pratchhits = 10, track = 0, rearrangements = "NNI", suboptimal = 0, ...) 
 }
 \arguments{
   \item{tree}{An object of class \code{phyDat} denoting the topology to begin the search from;}
@@ -18,7 +18,7 @@ Pratchet(tree, data, all = FALSE, outgroup = NULL, pratchiter = 100, searchiter 
   \item{searchiter}{maximum rearrangements to perform on each bootstrap or ratchet iteration;}
   \item{searchhits}{maximum times to hit best score before terminating a tree search within a 
                     pratchet iteration;}
-  \item{k}{stop when k ratchet iterations have found the same best score;}
+  \item{pratchhits}{stop when this many ratchet iterations have found the same best score;}
   \item{track}{larger numbers provides more verbose feedback to the user;}
   \item{rearrangements}{method to use when rearranging trees (see below for details);}
   \item{suboptimal}{retain trees that are suboptimal by \code{suboptimal} bits;}
