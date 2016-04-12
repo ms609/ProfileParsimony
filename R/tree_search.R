@@ -344,7 +344,7 @@ NNI <- function (tree) {
   neworder <- .C("C_reorder", as.integer(parent), as.integer(child), as.integer(n.edges), 
                  as.integer(max.node), integer(n.edges), as.integer(root-1L), PACKAGE = "phangorn")[[5]]    
   tree$edge <- matrix(c(parent, child), ncol=2)[neworder,]
-  # tree$edge.length <- tree$edge.length[neworder] # Uncomment to support edge lengths
+  tree$edge.length <- tree$edge.length[neworder]
   attr(tree, "order") <- "pruningwise"
   Renumber(tree)
 }

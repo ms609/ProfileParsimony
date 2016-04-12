@@ -1,10 +1,14 @@
-\name{tbr}
-\alias{tbr}
+\name{TBR}
+\alias{NNI}
+\alias{SPR}
+\alias{TBR}
 
-\title{Tree bisection and reconnection}
-\description{This function performs a single random \acronym{TBR} iteration.}
+\title{Tree rearrangement functions}
+\description{These functions performs a single random \acronym{TBR}, \acronym{SPR} or \acronym{NNI} iteration.}
 \usage{
-tbr(tree, edge.to.break = NULL)
+NNI(tree)
+SPR(tree)
+TBR(tree, edge.to.break = NULL)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -12,11 +16,17 @@ tbr(tree, edge.to.break = NULL)
   \item{edge.to.break}{the index of an edge to bisect, generated randomly if not specified.}
 }
 \details{
-Branch lengths are not (yet) supported.
+Performs a single iteration of the nearest-neigbour interchange, subtree pruning and regrafting,
+or tree bisection and reconnection algorithms.
+
+NNI and SPR are based on the corresponding phangorn functions, but have been re-coded to 
+improve their speed.
+
+Branch lengths are supported by NNI, but not (yet) SPR or TBR.
 }
-\value{This function returns a tree in \code{phyDat} format that has undergone one \acronym{TBR} iteration.}
+\value{Returns a tree with class \code{phylo}.}
 \references{
-The \acronym{TBR} algorithm is summarized in
+The algorithms are summarized in
 
 Felsenstein, J. 2004. \cite{Inferring Phylogenies.} Sinauer Associates, Sunderland, Massachusetts.
 }
@@ -25,9 +35,12 @@ Martin R. Smith
 }
 
 \seealso{
-\code{\link{rooted.tbr}}, useful when the position of the root node should be retained.
+\code{\link{NNI}}
+\code{\link{SPR}}
 }
 \examples{
 tree <- rtree(20, br=NULL)
-tbr(tree)
+NNI(tree)
+SPR(tree)
+TBR(tree)
 }
