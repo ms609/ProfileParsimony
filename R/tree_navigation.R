@@ -40,7 +40,7 @@ Descendants <- function (tree, node, ...) {
   return (which(DoDescendants(edge1, edge2, nTip, node, ...)))
 }
 
-DoDescendants <- function (edge1, edge2, nTip, node, just.tips = FALSE, just.internal=FALSE,
+DoDescendants <- function (edge1, edge2, nTip, node, just.tips = FALSE, just.internal = FALSE,
                            include.ancestor = FALSE) {
   # ARGUMENTS:
   #   "edge1", parent nodes: from tree$edge[,1]

@@ -4,76 +4,54 @@
 \alias{DoDescendants}
 \alias{AllAncestors}
 \title{Ancestors and Descendants}
-\description{This function uses the parsimony ratchet (Nixon 1999) to search for a more parsimonious tree.}
+\description{Reports the ancestors and descendants of nodes in a tree.}
 \usage{
-Pratchet(tree, data, all = FALSE, outgroup = NULL, pratchiter = 100, searchiter = 5000,
-         searchhits = 40, k = 10, track = 0, rearrangements = "NNI", suboptimal = 0, ...) 
+Ancestors (parent, child, node)
+AllAncestors (parent, child)
+Descendants (tree, node, ...)
+DoDescendants (parent, child, n.tips, node, just.tips = FALSE, just.internal = FALSE,
+                           include.ancestor = FALSE)
 }
 \arguments{
-  \item{tree}{An object of class \code{phyDat} denoting the topology to begin the search from;}
-  \item{data}{the output of \code{\link{PrepareDataFitch}}, or a matrix of class \code{phyDat}
-    (which the function will itself pass through \code{PrepareDataFitch});}
-  \item{all}{Set to TRUE to report all MPTs encountered during the search, perhaps to analyze 
-             consensus}
-  \item{outgroup}{a vector specifying all tips in the outgroup; if unspecified then identical
-                  trees with different roots will be considered unique;}
-  \item{pratchiter}{maximum parsimony ratchet iterations to perform;}
-  \item{searchiter}{maximum rearrangements to perform on each bootstrap or ratchet iteration;}
-  \item{searchhits}{maximum times to hit best score before terminating a tree search within a 
-                    pratchet iteration;}
-  \item{k}{stop when k ratchet iterations have found the same best score;}
-  \item{track}{larger numbers provides more verbose feedback to the user;}
-  \item{rearrangements}{method to use when rearranging trees (see below for details);}
-  \item{suboptimal}{retain trees that are suboptimal by \code{suboptimal} bits;}
-  \item{\dots}{other arguments to pass to subsequent functions.}
+  \item{tree}{An object of class \code{phylo} denoting the tree topology;}
+  \item{parent}{the parent node of each edge in a tree, i.e. tree$edge[, 1];}
+  \item{child}{the child node of each edge in a tree, i.e. tree$edge[, 2];}
+  \item{node}{the number of the node within a tree whose ancestors or descendants should be 
+              listed, which might be identified using \code{\link{nodelabels}};}
+  \item{n.tips}{the number of tips on the tree;}
+  \item{just.tips}{internal nodes are not listed if this is TRUE;}
+  \item{just.internal}{tips are not listed if this is TRUE (and just.tips is FALSE);}
+  \item{include.ancestor}{includes \code{node} in the output list;}  
+  \item{\dots}{other arguments to pass to \code{DoDescendants}.}
 }
 \details{
-  \code{rearrangements} takes one of the values \itemize{
-    \item 'NNI' : \link{NNI} rearrangements only
-    \item 'SPR only' : \link{SPR} rearrangements only
-    \item 'TBR only' : \link{TBR} rearrangements only
-    \item 'SPR' : SPR rearrangements followed by NNI
-    \item 'TBR' : TBR followed by SPR then NNI
-  }
+  \code{DoDescendants} is more efficient (if less user-friendly) than \code{Descendants}
 }
 \value{
-  This function returns a tree modified by parsimony ratchet iterations,
-  retaining the position of the root.
-}
-\references{
 \itemize{
- \item Nixon, K. C. (1999). \cite{The Parsimony Ratchet, a new method for rapid parsimony analysis.} 
-  Cladistics, 15(4), 407-414. doi:\href{http://dx.doi.org/10.1111/j.1096-0031.1999.tb00277.x}{10.1111/j.1096-0031.1999.tb00277.x}
-  
- \item Schliep, K. P. (2011). phangorn: phylogenetic analysis in R. Bioinformatics, 27(4), 592-593.
-  doi:\href{http://dx.doi.org/10.1093/bioinformatics/btq706}{10.1093/bioinformatics/btq706}
-}
+\item {Ancestors}{A list of all nodes ancestral to \code{node}}
+\item {AllAncestors}{A list, each entry comprising a list of all nodes ancestral to each node in turn}
+\item {Descendants}{A vector containing descendant nodes in numerical order}
+\item {DoDescendants}{A logical vector listing whether each node is a descendant of \code{node}}
 }
 
 \author{
 Martin R. Smith
 
-Adapted from \code{\link{pratchet}} in the \pkg{phangorn} package, which does not preserve the position of the root.
-}
-\seealso{
-\itemize{
-\item \code{\link{Pratchet}}
-\item \code{\link{TreeSearch}}
-}
+Adapted from internal functions in the \pkg{phangorn} package, with performance improvements.
 }
 \examples{
-\dontrun{
-data(congreveLamsdellMatrices)
-# Explore trees that are suboptimal by increasing degrees
-profile.suboptimal <- c(1e-08, round(0.73^((18:0) - 10), 5))
-pp.trees <- lapply(congreveLamsdellMatrices, function (data) 
-                   Pratchet(RandomTree(data), PrepareDataFitch(data), 
-                            all=TRUE, outgroup='1', suboptimal=max(profile.suboptimal) * 1.1,
-                            k=250, searchhits=10, searchiter=50, pratchiter=5000,
-                            rearrangements='TBR'))
-pp <- vapply(profile.suboptimal, function (so) lapply(pp.trees, function (trees) 
-              consensus(trees[Suboptimality(trees) < so])))
-plot(pp)
-}
+data(referenceTree)
+plot(referenceTree)
+nodelabels()
+edge   <- referenceTree$edge
+parent <- edge[, 1]
+child  <- edge[, 2]
+Ancestors(parent, child, 36)
+AllAncestors(parent, child)[[36]]
+Descendants(referenceTree, 36, just.internal=TRUE)
+descendant.tips <- DoDescendants(parent, child, length(referenceTree$tip.label), 36, just.tips=TRUE)
+referenceTree$tip.label[descendant.tips]
+
 }
 \keyword{ tree }
