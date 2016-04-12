@@ -2,6 +2,25 @@ library(memoise)
 ICPerStep <- function(splits, max.iter) ICS(min(splits), max(splits), max.iter)
 ICS <- memoize(function(a, b, m) ICSteps(c(rep(1, a), rep(2, b)), max.iter=m))
 
+## Copied from phangorn file phyDat.R.  Edited for style only.
+FastTable <- function (data) {                                                                                 
+  if(!is.data.frame(data)) {
+    data <- as.data.frame(data, stringsAsFactors = FALSE)                    
+  }
+  da <- do.call("paste", c(data, sep = "\r"))
+  ind <- !duplicated(da)
+  levels <- da[ind]
+  cat <- factor(da, levels = levels)
+  nl <- length(levels(cat))
+  bin <- (as.integer(cat) - 1)                            
+  pd <- nl
+  bin <- bin[!is.na(bin)]
+  if (length(bin)) bin <- bin + 1
+  y <- tabulate(bin, pd)
+  result <- list(index = bin, weights = y, data = data[ind,])
+  result                                                                              
+}   
+
 ## phangorn::phyDat has inexplicably stopped working.  This function 'fixes' it
 ## For simplicity I have not retained support for contrast matrices or ambiguity.
 PhyDat <- function (data, levels = NULL, compress = TRUE, ...) {
@@ -12,7 +31,7 @@ PhyDat <- function (data, levels = NULL, compress = TRUE, ...) {
       compress <- FALSE
   }
   if (compress) {
-    ddd    <- fast.table(data)
+    ddd    <- FastTable(data)
     data   <- ddd$data
     weight <- ddd$weight
     index  <- ddd$index
@@ -229,7 +248,7 @@ TreeSearch <- function (tree, data, method='NNI', maxiter=100, maxhits=20, fores
   if (is.null(attr(tree, 'score'))) attr(tree, 'score') <- ProfileScore(tree, data)
   best.score <- attr(tree, 'score')
   if (track > 0) cat("\n  - Performing", method, "search.  Initial score:", best.score)
-  rearrange.func <- switch(method, 'TBR' = TBR, 'SPR' = SPR, 'NNI' = QuickNNI)
+  rearrange.func <- switch(method, 'TBR' = TBR, 'SPR' = SPR, 'NNI' = NNI)
   return.single <- !(forest.size > 1)
   
   for (iter in 1:maxiter) {
@@ -302,20 +321,32 @@ RearrangeTree <- function (tree, data, rearrange, min.score=NULL, return.single=
   trees
 }
 
-QuickNNI <- function (tree) {
+# Adapted from phangorn:::nni; speed increased
+NNI <- function (tree) {
   n      <- sample(tree$Nnode - 1L, 1L)
   edge   <- tree$edge
   parent <- edge[, 1L]
   child  <- edge[, 2L]
-  k      <- min(parent) - 1L
-  ind    <- which(child > k)[n]
+  root   <- min(parent)
+  n.tips <- root - 1L
+  ind    <- which(child > n.tips)[n]
   p1     <- parent[ind]
   p2     <- child[ind]
   ind1   <- which(parent == p1)
   ind1   <- ind1[ind1 != ind][1L]
   ind2   <- which(parent == p2)[sample(2L,1L)]
-  tree$edge[c(ind1, ind2), 2L] <- child[c(ind2, ind1)]
-  Renumber(reorderPruning(tree))
+  # Perform the switch
+  child[c(ind1, ind2)] <- child[c(ind2, ind1)]
+    
+  # Reorder pruning - modified from phangorn:::reorderPruning  
+  max.node <- max(parent)
+  n.edges  <- length(parent)
+  neworder <- .C("C_reorder", as.integer(parent), as.integer(child), as.integer(n.edges), 
+                 as.integer(max.node), integer(n.edges), as.integer(root-1L), PACKAGE = "phangorn")[[5]]    
+  tree$edge <- matrix(c(parent, child), ncol=2)[neworder,]
+  # tree$edge.length <- tree$edge.length[neworder] # Uncomment to support edge lengths
+  attr(tree, "order") <- "pruningwise"
+  Renumber(tree)
 }
 
 SPR <- function(tree) {

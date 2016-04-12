@@ -1,4 +1,4 @@
-export(Pratchet, PrepareDataFitch, TBR, SPR, QuickNNI, PhyDat, InfoAmounts, Suboptimality)
+export(Pratchet, PrepareDataFitch, TBR, SPR, NNI, PhyDat, InfoAmounts, Suboptimality)
 export(Bootstrap, TreeSearch, AddTip, DropTip, Renumber, BindTree, Root, SingleTaxonTree)
 export(RandomTree, RearrangeTree, DropTipNoSubtree, CollapseSingles, ExtractClade, ProfileScore)
 export(ICSteps, NRooted, NUnrooted, LnRooted, LnUnrooted, LnUnrootedMult, LnRootedMult)
