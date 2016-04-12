@@ -20,7 +20,7 @@ Pratchet(tree, data, all = FALSE, outgroup = NULL, pratchiter = 100, searchiter 
                     pratchet iteration;}
   \item{k}{stop when k ratchet iterations have found the same best score;}
   \item{track}{larger numbers provides more verbose feedback to the user;}
-  \item{rearrangements}{method to use when rearranging trees: NNI, SPR or TBR;}
+  \item{rearrangements}{method to use when rearranging trees: 'NNI', 'SPR' or 'TBR' !!! 'TBR only' 'SPR only' !!!;}
   \item{suboptimal}{retain trees that are suboptimal by \code{suboptimal} bits;}
   \item{\dots}{other arguments to pass to subsequent functions.}
 }

@@ -92,7 +92,7 @@ InfoAmounts <- function (data) {
   # The below is simplified from info_extra_step.r::evaluate
   chars  <- matrix(unlist(data), attr(data, 'nr'))
   splits <- apply(chars, 1, table)  # No ambiguous tokens to worry about
-  info.losses <- apply(splits, 2, ICPerStep, max.iter=100000)
+  info.losses <- apply(splits, 2, ICPerStep, max.iter=400000)
   ret <- lapply(info.losses, function(p) {
     cump <- cumsum(p)
     n.steps <- as.integer(names(p))
@@ -121,7 +121,7 @@ Pratchet <- function (tree, data, all=FALSE, outgroup=NULL, pratchiter=100, sear
   if (class(data) == 'phyDat') data <- PrepareDataFitch(data)
   if (class(data) != 'fitchDat') stop("data must be a phyDat object, or the output of PrepareDataFitch(phyDat object).")
   epsilon <- 1e-08
-  if (is.null(attr(tree, "score"))) attr(tree, "score") <- FitchInfoFast(tree, data)
+  if (is.null(attr(tree, "score"))) attr(tree, "score") <- ProfileScore(tree, data)
   best.score <- attr(tree, "score")
   if (track >= 0) cat("\n* Initial score:", best.score)
   if (all) {
@@ -226,7 +226,7 @@ TreeSearch <- function (tree, data, method='NNI', maxiter=100, maxhits=20, fores
   } else {
     forest.size <- 1 
   }
-  if (is.null(attr(tree, 'score'))) attr(tree, 'score') <- FitchInfoFast(tree, data)
+  if (is.null(attr(tree, 'score'))) attr(tree, 'score') <- ProfileScore(tree, data)
   best.score <- attr(tree, 'score')
   if (track > 0) cat("\n  - Performing", method, "search.  Initial score:", best.score)
   rearrange.func <- switch(method, 'TBR' = TBR, 'SPR' = SPR, 'NNI' = QuickNNI)
@@ -276,13 +276,13 @@ RearrangeTree <- function (tree, data, rearrange, min.score=NULL, return.single=
   if (is.null(cluster)) {
     re.tree <- rearrange(tree)
     trees <- list(re.tree)
-    min.score <- FitchInfoFast(re.tree, data)
+    min.score <- ProfileScore(re.tree, data)
     best.trees <- c(TRUE)
   } else {
-    #candidates <- clusterCall(cluster, function(re, tr, k) {ret <- re(tr); attr(ret, 'score') <- FitchInfoFast(ret, cl.data, k); ret}, rearrange, tree)
+    #candidates <- clusterCall(cluster, function(re, tr, k) {ret <- re(tr); attr(ret, 'score') <- ProfileScore(ret, cl.data, k); ret}, rearrange, tree)
     #scores <- vapply(candidates, function(x) attr(x, 'ps'), 1)
     candidates <- clusterCall(cluster, rearrange, tree)
-    scores <- vapply(candidates, FitchInfoFast, 1, data, target=min.score) # ~3x faster to do this in serial in r233.
+    scores <- vapply(candidates, ProfileScore, 1, data, target=min.score) # ~3x faster to do this in serial in r233.
     min.score <- min(scores)
     best.trees <- scores == min.score
     trees <- candidates[best.trees]
@@ -1099,10 +1099,10 @@ RandomTree <- function (data, br=NULL) {
   return(rtree(n.tips, tip.label=tips, br=br))
 }
 
-FitchInfoFast <- function (tree, data) {
+ProfileScore <- function (tree, data) {
     # Data
   if (class(data) == 'phyDat') data <- PrepareDataFitch(data)
-  if (class(data) != 'fitchDat') stop('Invalid data type; try FitchInfoFast(tree, data <- 
+  if (class(data) != 'fitchDat') stop('Invalid data type; try ProfileScore(tree, data <- 
                                       PrepareDataFitch(valid.phyDat.object)).')
   at <- attributes(data)
   n.char  <- at$nr # strictly, transformation series patterns; these'll be upweighted later
