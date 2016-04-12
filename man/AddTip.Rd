@@ -21,6 +21,7 @@ This function returns a tree of class \code{phylo} with an additional tip at the
 \seealso{
 \itemize{
 \item \code{\link{BindTree}}
+\item \code{\link{DropTip}}
 \item \code{\link{nodelabels}}
 }
 }

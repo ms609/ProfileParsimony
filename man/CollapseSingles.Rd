@@ -1,14 +1,14 @@
-\name{BindTree}
-\alias{BindTree}
-\title{Bind two trees}
+\name{CollapseSingles}
+\alias{CollapseSingles}
+\title{Collapse single nodes}
 \description{Unknown}
 \usage{
-BindTree(tree, where, label)
+Unknown()
 }
 \arguments{
-  \item{tree}{A phylogenetic tree of class \code{\link{phylo}};}
-  \item{where}{The node or tip that should form the sister taxon to the new node.  To add a new tip at the root, use "where = 0";}
-  \item{label}{A character string providing the label the new tip.}
+  \item{arg1}{A phylogenetic tree of class \code{\link{phylo}};}
+  \item{arg2}{the node or tip that should form the sister taxon to the new node.  To add a new tip at the root, use "where = 0";}
+  \item{arg3}{a character string providing the label the new tip.}
 }
 \details{
 Extends \code{\link{BindTree}}, which cannot handle single-taxon trees.
