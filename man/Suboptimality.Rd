@@ -4,11 +4,12 @@
 \title{Tree suboptimality extent}
 \description{Reports how suboptimal each tree is from the most optimal tree in a set.}
 \usage{
-Suboptimality(trees)
+Suboptimality(trees, proportional = FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{trees}{trees, of class \code{\link{multiPhylo}}.}
+  \item{proportional}{If \hbk{TRUE}, expressed suboptimality as a proportion of the optimal score}.}
 }
 \details{
 Uses the 'score' attribute of trees generated through the \code{\link{TreeSearch}} function 

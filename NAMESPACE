@@ -3,3 +3,4 @@ export(Bootstrap, TreeSearch, AddTip, DropTip, Renumber, BindTree, Root, SingleT
 export(RandomTree, RearrangeTree, DropTipNoSubtree, CollapseSingles, ExtractClade, ProfileScore)
 export(ICSteps, NRooted, NUnrooted, LnRooted, LnUnrooted, NUnrootedMult, LnUnrootedMult)
 export(Ancestors, AllAncestors, Descendants, DoDescendants)
+export(unique.multiPhylo, SuccessiveWeights)

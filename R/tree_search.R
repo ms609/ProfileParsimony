@@ -1,11 +1,15 @@
-Suboptimality <- function (trees) {
+Suboptimality <- function (trees, proportional = FALSE) {
   scores <- vapply(trees, attr, double(1), 'score')
-  return(scores - min(scores))
+  if (proportional) {
+    return ((scores - min(scores)) / min(scores))
+  } else {
+    return(scores - min(scores))
+  }
 }
 
 Pratchet <- function (tree, data, ParsimonyScorer=ProfileScore, all=FALSE, outgroup=NULL, 
                       pratchiter=100, searchiter=5000, searchhits=40, pratchhits=10, track=0, 
-                      rearrangements="NNI", suboptimal=0, ...) {
+                      rearrangements="NNI", suboptimal=1e-08, ...) {
   if (class(data) == 'phyDat') data <- PrepareDataFitch(data)
   if (class(data) != 'fitchDat') stop("data must be a phyDat object, or the output of PrepareDataFitch(phyDat object).")
   epsilon <- 1e-08
@@ -15,16 +19,15 @@ Pratchet <- function (tree, data, ParsimonyScorer=ProfileScore, all=FALSE, outgr
   if (all) {
     null.forest <- vector('list', pratchiter)
     forest <- null.forest
-    forest.scores <- double(pratchiter)
+    forest.scores <- rep(NA, pratchiter)
   }
 
-  kmax <- 0
+  best.score.hits <- 0
+  iterations.completed <- 0
   for (i in 1:pratchiter) {
     if (track >= 0) cat ("\n - Running NNI on bootstrapped dataset. ")
     bstree <- Bootstrap(phy=tree, x=data, maxiter=searchiter, maxhits=searchhits,
-                        ParsimonyScorer=ParsimonyScorer,  track=track - 1
-                        , ...
-                        )
+                        ParsimonyScorer=ParsimonyScorer,  track=track - 1, ...)
     
     if (track >= 0) cat ("\n - Running", ifelse(is.null(rearrangements), "NNI", rearrangements), "from new candidate tree:")
     if (rearrangements == "TBR") {
@@ -38,10 +41,8 @@ Pratchet <- function (tree, data, ParsimonyScorer=ProfileScore, all=FALSE, outgr
       candidate <- TreeSearch(candidate, data, ParsimonyScorer=ParsimonyScorer, method='NNI', track=track, maxiter=searchiter, maxhits=searchhits, ...)
     } else if (rearrangements == "SPR only") {  
       candidate <- TreeSearch(bstree,    data, ParsimonyScorer=ParsimonyScorer, method='SPR', track=track, maxiter=searchiter, maxhits=searchhits, ...)
-    } else {                                    
-      candidate <- TreeSearch(bstree,    data, ParsimonyScorer=ParsimonyScorer, method='NNI', track=track, maxiter=searchiter, maxhits=searchhits
-      , ...
-      )
+    } else {  
+      candidate <- TreeSearch(bstree,    data, ParsimonyScorer=ParsimonyScorer, method='NNI', track=track, maxiter=searchiter, maxhits=searchhits, ...)
     }
     cand.score <- attr(candidate, 'score')
     if ((cand.score + epsilon) < best.score) {
@@ -52,9 +53,9 @@ Pratchet <- function (tree, data, ParsimonyScorer=ProfileScore, all=FALSE, outgr
       }
       tree <- candidate
       best.score <- cand.score
-      kmax <- 1
+      best.score.hits <- 1
     } else if (best.score + epsilon > cand.score) { # i.e. best == cand, allowing for floating point error
-      kmax <- kmax + 1
+      best.score.hits <- best.score.hits + 1
       tree <- candidate
       if (all) {
         forest[[i]] <- if (is.null(outgroup)) candidate else Root(candidate, outgroup)
@@ -64,18 +65,28 @@ Pratchet <- function (tree, data, ParsimonyScorer=ProfileScore, all=FALSE, outgr
       forest[[i]] <- if (is.null(outgroup)) candidate else Root(candidate, outgroup)
       forest.scores[i] <- cand.score
     }
-    if (track >= 0) cat("\n* Best score after", i, "/", pratchiter, "pratchet iterations:", best.score, "( hit", kmax, "/", pratchhits, ")")
-    if (kmax >= pratchhits) break()
+    if (track >= 0) cat("\n* Best score after", i, "/", pratchiter, "pratchet iterations:", best.score, "( hit", best.score.hits, "/", pratchhits, ")")
+    if (best.score.hits >= pratchhits) {
+      iterations.completed <- i
+      break()
+    }
   } # end for
-  if (track >= 0) cat ("\nCompleted parsimony ratchet after", i, "iterations with score", best.score, "\n")
-    
+  if (iterations.completed == 0) iterations.completed <- pratchiter
+  if (track >= 0) cat ("\nCompleted parsimony ratchet after", iterations.completed, "iterations with score", best.score, "\n")
+   
   if (all) {
-    keepers <- forest.scores < best.score + suboptimal
-    if (i < pratchiter) keepers[(i + 1):pratchiter] <- FALSE
+    keepers <- !is.na(forest.scores) & forest.scores < best.score + suboptimal
     forest.scores <- forest.scores[keepers]
     forest <- forest[keepers]
-    class(forest) <- 'multiPhylo'
-    ret <- unique(forest)
+    if (length(forest) > 1) {
+      class(forest) <- 'multiPhylo'
+      ret <- unique(forest)
+    } else if (length(forest) == 1) {
+      class(forest) <- 'phylo'
+      ret <- forest
+    } else {
+      stop('No trees!? Is suboptimal set to a sensible (positive) value?')
+    }
     scores.unique <- vapply(ret, attr, double(1), 'score')
     cat('Found', sum(scores.unique == min(scores.unique)), 'unique MPTs and', length(ret) - sum(scores.unique == min(scores.unique)), 'suboptimal trees.\n')
     if (is.null(outgroup)) warning('"outgroup" not specified, so some "unique" trees may have same topology but distinct roots.')
