@@ -1,9 +1,9 @@
-\name{tree.search}
-\alias{tree.search}
+\name{TreeSearch}
+\alias{TreeSearch}
 \title{Search for most parsimonious trees}
 \description{Run standard search algorithms (\acronym{NNI}, \acronym{SPR} or \acronym{TBR}) to search for a more parsimonious tree.}
 \usage{
-tree.search(tree, data, outgroup, concavity = NULL, method = "NNI", maxiter = 100, 
+TreeSearch(tree, data, outgroup, concavity = NULL, method = "NNI", maxiter = 100, 
   maxhits = 20, forest.size = 1, cluster = NULL, trace = 1, ...)
 }
 \arguments{
@@ -32,20 +32,19 @@ Martin R. Smith
 }
 \seealso{
 \itemize{
-\item \code{\link{parsimony.inapp}}, calculates parsimony score, supports inapplicable tokens;
-\item \code{\link{rooted.nni}}, conducts tree rearrangements;
-\item \code{\link{sectorial.search}}, alternative heuristic, useful for larger trees;
-\item \code{\link{pratchet.inapp}}, alternative heuristic, useful to escape local optima.
+\item \code{\link{ProfileScore}}, calculates parsimony score;
+\item \code{\link{NNI}}, conducts tree rearrangements;
+\item \code{\link{Pratchet}}, alternative heuristic, useful to escape local optima.
 }}
 \examples{
-data('SigSut')
-outgroup <- c('Lingula', 'Mickwitzia', 'Neocrania')
-njtree <- root(nj(dist.hamming(SigSut.phy)), outgroup, resolve.root=TRUE)
-njtree$edge.length <- NULL; njtree<-set.outgroup(njtree, outgroup)
+data('congreveLamsdellMatrices')
+my.data <- congreveLamsdellMatrices[[1]]
+njtree <- root(nj(dist.hamming(my.data)), outgroup, resolve.root=TRUE)
+njtree$edge.length <- NULL
 \dontrun{
-tree.search(njtree, SigSut.preparedata, outgroup, maxiter=20, method='NNI')
-tree.search(njtree, SigSut.preparedata, outgroup, maxiter=20, method='SPR')
-tree.search(njtree, SigSut.preparedata, outgroup, maxiter=20, method='TBR')}
+TreeSearch(njtree, PrepareDataFitch(my.data), outgroup='1', maxiter=20, method='NNI')
+TreeSearch(njtree, PrepareDataFitch(my.data), outgroup='1', maxiter=20, method='SPR')
+TreeSearch(njtree, PrepareDataFitch(my.data), outgroup='1', maxiter=20, method='TBR')}
 }
 
 \keyword{ tree }

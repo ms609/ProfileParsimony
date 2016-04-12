@@ -8,8 +8,8 @@ Pratchet(tree, data, all = FALSE, outgroup = NULL, pratchiter = 100, searchiter 
 }
 \arguments{
   \item{tree}{An object of class \code{phyDat} denoting the topology to begin the search from;}
-  \item{data}{the output of \code{\link{prepare.data}}, or a matrix in phyDat format
-    (which the function will itself pass through \code{prepare.data});}
+  \item{data}{the output of \code{\link{PrepareDataFitch}}, or a matrix of class \code{phyDat}
+    (which the function will itself pass through \code{PrepareDataFitch});}
   \item{all}{Set to TRUE to report all MPTs encountered during the search, perhaps to analyze 
              consensus}
   \item{outgroup}{a vector specifying all tips in the outgroup; if unspecified then identical
@@ -42,7 +42,7 @@ Pratchet(tree, data, all = FALSE, outgroup = NULL, pratchiter = 100, searchiter 
  \item Nixon, K. C. (1999). \cite{The Parsimony Ratchet, a new method for rapid parsimony analysis.} 
   Cladistics, 15(4), 407-414. doi:\href{http://dx.doi.org/10.1111/j.1096-0031.1999.tb00277.x}{10.1111/j.1096-0031.1999.tb00277.x}
   
- \item Schliep, K. P. (2011). phangorn: phylogenetic analysis in R. Bioinformatics, 27(4), 592–593.
+ \item Schliep, K. P. (2011). phangorn: phylogenetic analysis in R. Bioinformatics, 27(4), 592-593.
   doi:\href{http://dx.doi.org/10.1093/bioinformatics/btq706}{10.1093/bioinformatics/btq706}
 }
 }

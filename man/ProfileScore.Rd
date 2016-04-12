@@ -1,7 +1,9 @@
 \name{ProfileScore}
 \alias{ProfileScore}
 \title{Profile Parsimony score}
-\description{\dots}
+\description{
+  Calculates the profile parsimony score (Faith & Trueman 2001) of a tree for a given dataset.
+}
 \usage{
 ProfileScore (tree, data)
 }

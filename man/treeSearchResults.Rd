@@ -19,8 +19,11 @@
   These trees were the basis of the data analysis in Smith (201X).
 }
 \source{
-
-}
+data(congreveLamsdellMatrices)
+lapply(congreveLamsdellMatrices, function (data) {
+  Pratchet(RandomTree(data), PrepareDataFitch(data), all=TRUE, outgroup='1', suboptimal=24,
+           k=100, searchhits=50, searchiter=5000, pratchiter=5000, rearrangements='TBR')
+})
 \references{
 \itemize{
 \item Congreve, C. R., & Lamsdell, J. C. (2016). \cite{Implied weighting and its utility in 
@@ -29,8 +32,7 @@
 
 \item Congreve, C. R., & Lamsdell, J. C. (2016). Data from: Implied weighting and its utility in 
 palaeontological datasets: a study using modelled phylogenetic matrices. Dryad Digital
-Repository, \href{http://dx.doi.org/10.5061/dryad.7dq0j}{doi:10.5061/dryad.7dq0j}Sigwart, J. D., & Sutton, M. D. (2007). \cite{Deep molluscan phylogeny: synthesis of palaeontological and neontological data.} Proceedings of the Royal Society B: Biological Sciences, 274, 2413-2419. doi:\href{http://dx.doi.org/10.1098/rspb.2007.0701}{10.1098/rspb.2007.0701}
-}
+Repository, \href{http://dx.doi.org/10.5061/dryad.7dq0j}{doi:10.5061/dryad.7dq0j}
 
 \item Smith, M. R. (201X). \cite{Trade-Offs between Resolution and Accuracy under Different Methods of
 Phylogenetic Inference.} Syst. Biol. 

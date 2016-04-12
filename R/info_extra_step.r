@@ -5,7 +5,6 @@ ICS <- memoise(function(a, b, m) ICSteps(c(rep(1, a), rep(2, b)), max.iter=m))
 RandomTrees <- memoise (function(N, n) unclass(rmtree(N, n)))
 NamedConstant <- function(X, name) {names(X) <- name; return(X)}
 
-
 LDFactorial <- memoise (function (x) {
   # memoized version of phangorn::ldfactorial
   x <- (x + 1) / 2
@@ -26,10 +25,10 @@ DoubleFactorial <- function (x) {
   x
 }
 
-NRooted     <- memoise(function (tips, extra=0)  DFact(2*tips-3-extra))
-NUnrooted1  <- memoise(function (tips, extra=0)  DFact(2*tips-5-extra))
-LnUnrooted1 <- memoise(function (tips, extra=0) LDFact(2*tips-5-extra))
-LnRooted    <- memoise(function (tips, extra=0) LDFact(2*tips-3-extra))
+NRooted     <- memoise(function (tips, extra=0)  DFact(2 * tips - 3 - extra))
+NUnrooted1  <- memoise(function (tips, extra=0)  DFact(2 * tips - 5 - extra))
+LnUnrooted1 <- memoise(function (tips, extra=0) LDFact(2 * tips - 5 - extra))
+LnRooted    <- memoise(function (tips, extra=0) LDFact(2 * tips - 3 - extra))
 
 LnUnrooted <- function (splits) {
   if ((n.splits <- length(splits)) < 2) return (LnUnrooted1(splits));
@@ -71,7 +70,7 @@ ICSteps <- function (char, ambiguous.token = 0, expected.minima = 25, max.iter =
   #analytic.ic1<- -log((n.no.extra.steps + n.one.extra.step)/NUnrooted(sum(split))) / log(2)
 
   cat(c(round(analytic.ic0, 3), 'bits @ 0 extra steps; attempting', n.iter, 'iterations.\n'))
-  cat(c(round(analytic.ic0, 3), 'bits @ 0 extra steps;', round(analytic.ic1, 3), '@ 1; attempting', n.iter, 'iterations.\n'))
+  # cat(c(round(analytic.ic0, 3), 'bits @ 0 extra steps;', round(analytic.ic1, 3), '@ 1; attempting', n.iter, 'iterations.\n'))
   if (n.iter == max.iter) warning ("Truncated number of iterations at max.iter = ", max.iter)
   trees <- RandomTrees(n.iter, n.char)
   steps <- vapply(trees, function (tree, char) {

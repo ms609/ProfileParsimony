@@ -11,15 +11,16 @@
   of splits.
 }
 \usage{
-NRooted(tips)
-NUnrooted(tips)
-LnRooted(tips)
-LnUnrooted(tips)
+NRooted(tips, extra = 0)
+NUnrooted(tips, extra = 0)
+LnRooted(tips, extra = 0)
+LnUnrooted(tips, extra = 0)
 LnUnrootedMult(splits)
 NUnrootedMult(splits)
 }
 \arguments{
   \item{tips}{The number of tips;}
+  \item{extra}{the number of points at which another branch cannot be added;}
   \item{splits}{vector listing the number of taxa in each tree bipartition.}
 }
 \details{
@@ -35,7 +36,7 @@ Martin R. Smith
 \references{
 
 Carter, M., Hendy, M., & Penny, D. (1990). \cite{On the distribution of lengths of evolutionary 
-trees.} SIAM Journal on Discrete Mathematics, 3(1), 38–47. doi:
+trees.} SIAM Journal on Discrete Mathematics, 3(1), 38-47. doi:
 \href{http://doi.org/10.1137/0403005}{10.1137/0403005}
 
 }
