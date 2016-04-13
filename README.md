@@ -17,8 +17,8 @@ install.packages('devtools')
 # Install the inapplicable package from github
 devtools::install_github('ms609/ProfileParsimony')
 
-# Load the inapplicable package into R
-library('inapplicable')
+# Load the package into R
+library('ProfileParsimony')
 ```
 
 ## References
