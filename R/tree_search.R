@@ -386,7 +386,7 @@ SuccessiveApproximations <- function (tree, data, outgroup = NULL, k = 3, max.su
   n.node <- max.node - n.tip
   bests <- vector('list', max.succiter + 1)
   bests.consensus <- vector('list', max.succiter + 1)
-  best <- bests[[i]] <- bests.consensus[[1]] <- Root(tree, outgroup)
+  best <- bests[[1]] <- bests.consensus[[1]] <- Root(tree, outgroup)
   for (i in seq_len(max.succiter) + 1) {
     if (track > 0) cat('\nSuccessive Approximations Iteration', i - 1)
     attr(best, 'score') <- NULL
