@@ -357,7 +357,7 @@ ProfileScore <- function (tree, data) {
   info <- at$info.amounts
   # Return a negative rather than positive value because algorithms assume that 
   # smaller numbers are better
-  return(-sum(info[(steps - 1) * n.char + seq_len(n.char)] * weight))
+  return(-sum(info[max(0, (steps - 1)) * n.char + seq_len(n.char)] * weight))
 }
 
 SuccessiveWeights <- function(tree, data) {
