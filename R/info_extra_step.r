@@ -70,7 +70,7 @@ ICSteps <- function (char, ambiguous.token = 0, expected.minima = 25, max.iter =
   #analytic.ic1<- -log(n.one.extra.step/NUnrooted(sum(split))) / log(2)
   #analytic.ic1<- -log((n.no.extra.steps + n.one.extra.step)/NUnrooted(sum(split))) / log(2)
 
-  cat(c('  ', signif(analytic.ic0, ceiling(log(max.iter))), 'bits @ 0 extra steps; using', n.iter, 'iterations to estimate cost of further steps.\n'))
+  cat(c('  ', signif(analytic.ic0, ceiling(log10(max.iter))), 'bits @ 0 extra steps; using', n.iter, 'iterations to estimate cost of further steps.\n'))
   # cat(c(round(analytic.ic0, 3), 'bits @ 0 extra steps;', round(analytic.ic1, 3), '@ 1; attempting', n.iter, 'iterations.\n'))
   trees <- RandomTrees(n.iter, n.char)
   steps <- vapply(trees, function (tree, char) {
