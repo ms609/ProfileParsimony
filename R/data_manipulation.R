@@ -82,7 +82,10 @@ PrepareDataFitch <- function (data, precision = 400000) {
   info.amounts <- InfoAmounts(data, precision)
   max.length <- max(vapply(info.amounts, length, integer(1)))
   info <- array(0, dim=c(nChar, max.length))
-  for (i in 1:nChar) info[i, 1:length(info.amounts[[i]])] <- info.amounts[[i]]
+  for (i in 1:nChar) {
+      i.info <- info.amounts[[i]]
+      if (length(i.info)) info[i, 1:length(i.info)] <- i.info
+    }
   at$names <- NULL
   powers.of.2 <- 2L ^ c(0L:(nLevel - 1L))
   tmp <- cont %*% powers.of.2

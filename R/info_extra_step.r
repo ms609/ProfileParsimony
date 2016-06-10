@@ -231,8 +231,10 @@ Evaluate <- function (tree, data) {
 
 InfoAmounts <- function (data, precision=400000) {
   # The below is simplified from info_extra_step.r::evaluate
-  chars  <- matrix(unlist(data), attr(data, 'nr'))
-  splits <- apply(chars, 1, table)  # No ambiguous tokens to worry about
+  # Assumes no ambiguous tokens & 2 tokens, '1' and '2'
+  data.nr <- attr(data, "nr")
+  chars <- matrix(c(unlist(data), rep(1, data.nr), rep(2, data.nr)), data.nr) # add 
+  splits <- apply(chars, 1, table) - 1
   info.losses <- apply(splits, 2, ICPerStep, max.iter=precision)
   ret <- lapply(info.losses, function(p) {
     cump <- cumsum(p)
