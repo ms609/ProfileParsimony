@@ -354,6 +354,7 @@ ProfileScore <- function (tree, data) {
   n.char  <- at$nr # strictly, transformation series patterns; these'll be upweighted later
   weight <- at$weight
   steps <- Fitch(tree, data, at)
+  info <- at$info.amounts
   # Return a negative rather than positive value because algorithms assume that 
   # smaller numbers are better
   return(-sum(info[(steps - 1) * n.char + seq_len(n.char)] * weight))

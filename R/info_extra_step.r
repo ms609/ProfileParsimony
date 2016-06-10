@@ -65,13 +65,13 @@ ICSteps <- function (char, ambiguous.token = 0, expected.minima = 25, max.iter =
     return(NamedConstant(1, min.steps))
   }
   n.iter <- min(max.iter, round(expected.minima * proportion.viable))
+  if (n.iter == max.iter) warning ("Will truncate number of iterations at max.iter = ", max.iter)
   analytic.ic0 <- -log(n.no.extra.steps/NUnrooted(sum(split))) / log(2)
   #analytic.ic1<- -log(n.one.extra.step/NUnrooted(sum(split))) / log(2)
   #analytic.ic1<- -log((n.no.extra.steps + n.one.extra.step)/NUnrooted(sum(split))) / log(2)
 
-  cat(c(round(analytic.ic0, 3), 'bits @ 0 extra steps; attempting', n.iter, 'iterations.\n'))
+  cat(c('  ', signif(analytic.ic0, ceiling(log(max.iter))), 'bits @ 0 extra steps; using', n.iter, 'iterations to estimate cost of further steps.\n'))
   # cat(c(round(analytic.ic0, 3), 'bits @ 0 extra steps;', round(analytic.ic1, 3), '@ 1; attempting', n.iter, 'iterations.\n'))
-  if (n.iter == max.iter) warning ("Truncated number of iterations at max.iter = ", max.iter)
   trees <- RandomTrees(n.iter, n.char)
   steps <- vapply(trees, function (tree, char) {
     tree <- reorder(tree, "postorder")
