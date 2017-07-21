@@ -7,8 +7,8 @@ of Successive Approximations weighting (Farris 1969).
 It incorporates modifications to phangorn that improve the speed of phylogenetic analysis, 
 and adds support for TBR rearrangements.
 
-The package will soon be compiled and uploaded to the CRAN repository.  
-Meanwhile, you can install the latest version of the package into R thus:
+A stable version of this package is available through the CRAN repository.
+Alternatively, you can install the latest development version of the package into R thus:
 
 ```r
 # Install the devtools package from CRAN
