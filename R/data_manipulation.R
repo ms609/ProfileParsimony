@@ -87,7 +87,7 @@ PrepareDataFitch <- function (data, precision = 400000) {
   attr(ret, 'inappLevel') <- 2 ^ (inappLevel - 1)
   attr(ret, 'dim') <- c(nChar, nTip)  
   applicableTokens <- setdiff(powers.of.2, 2 ^ (inappLevel - 1))
-  attr(ret, 'split.sizes') <- t(apply(ret, 1, function(x) vapply(applicableTokens, function (y) sum(x == y), integer(1))))
+  attr(ret, 'split.sizes') <- apply(ret, 1, function(x) vapply(applicableTokens, function (y) sum(x == y), integer(1)))
   attr(ret, 'info.amounts') <- InfoAmounts(ret, precision)
   attr(ret, 'bootstrap') <- c('info.amounts', 'split.sizes')
   dimnames(ret) <- list(NULL, nam)
