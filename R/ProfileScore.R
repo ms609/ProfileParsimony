@@ -18,9 +18,9 @@ ProfileScore <- function (tree, data) {
   weight <- at$weight
   steps <- TreeSearch::FitchSteps(tree, data, TreeSearch::TipsAreColumns, at)
   info <- at$info.amounts
-  nColInfo <- ncol(info)
+  nRowInfo <- nrow(info)
   return (-sum(vapply(seq_len(nChar), function (i) {
-    stepCol <- max(0L, steps[i] - 1L) + 1L
-    return(if (stepCol > nColInfo) 0 else info[i, stepCol])
+    stepRow <- max(0L, steps[i] - 1L) + 1L
+    return(if (stepRow > nRowInfo) 0 else info[stepRow, i])
   }, double(1)) * weight))
 }
