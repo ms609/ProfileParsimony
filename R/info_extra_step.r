@@ -29,6 +29,9 @@ NRooted     <- memoise(function (tips, extra=0)  DFact(2 * tips - 3 - extra))
 NUnrooted1  <- memoise(function (tips, extra=0)  DFact(2 * tips - 5 - extra))
 LnUnrooted1 <- memoise(function (tips, extra=0) LDFact(2 * tips - 5 - extra))
 LnRooted    <- memoise(function (tips, extra=0) LDFact(2 * tips - 3 - extra))
+N1Spr <- function (n) if (n > 2) 2 * (n - 3) * ((2 * n) - 7) else 0 # Trees exactly one SPR step away. Given by Allen and Steel 2001.
+
+IC1Spr <- function(n) -log2((1+N1Spr(n)) / NUnrooted(n)) # Information content of trees 0 or 1 SPR step from tree with n tips.
 
 LnUnrooted <- function (splits) {
   if ((n.splits <- length(splits)) < 2) return (LnUnrooted1(splits));

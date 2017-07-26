@@ -1,11 +1,12 @@
 Package: ProfileParsimony
 Type: Package
 Title: Phylogenetic Inference by Profile Parsimony
-Version: 0.1.2
-Date: 2016-04-11
+Version: 0.2.0
+Date: 2017-07-26
 Author: Martin R. Smith
 Maintainer: Martin R. Smith <martins@gmail.com>
 Description: Conduct a phylogenetic tree search using the profile parsimony concavity function as the optimality criterion
-Depends: ape, phangorn, memoise
+Depends: ape, memoise, TreeSearch
+Suggests: phangorn
 LazyData: true
 License: MIT
