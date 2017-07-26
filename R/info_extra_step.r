@@ -1,6 +1,6 @@
 library(memoise)
-ICPerStep <- function(splits, max.iter) ICS(min(splits), max(splits), max.iter)
-ICS <- memoise(function(a, b, m) ICSteps(c(rep(1, a), rep(2, b)), max.iter=m))
+ICPerStep <- function(splits, maxIter) ICS(min(splits), max(splits), maxIter)
+ICS <- memoise(function(a, b, m) ICSteps(c(rep(1, a), rep(2, b)), maxIter=m))
 
 RandomTrees <- memoise (function(N, n) unclass(rmtree(N, n)))
 NamedConstant <- function(X, name) {names(X) <- name; return(X)}
@@ -54,62 +54,63 @@ NUnrootedMult  <- function (splits) {  # Carter et al. 1990, Theorem 2
   round(DFact(2 * total.tips - 5) / DFact(2 * (total.tips - length(splits)) - 1) * prod(vapply(2 * splits - 3, DFact, double(1))))
 }
 
-ICSteps <- function (char, ambiguous.token = 0, expected.minima = 25, max.iter = 10000) {
-  char <- matrix(2 ^ char[char != ambiguous.token], ncol = 1)
-  n.char <- length(char)
-  rownames(char) <- paste0('t', 1:n.char)
+ICSteps <- function (char, ambiguousToken = 0, expectedMinima = 25, maxIter = 10000) {
+  char <- matrix(2 ^ char[char != ambiguousToken], ncol = 1)
+  rownames(char) <- paste0('t', seq_along(char))
+  charLen <- length(char)
+  
   split <- sort(as.integer(table(char)))
-  min.steps <- length(split) - 1
-  if (min.steps == 0) return (NamedConstant(1, 0))
-  n.no.extra.steps <- NUnrootedMult(split)
-  #n.one.extra.step <- WithOneExtraStep(split)
-  proportion.viable <- NUnrooted(n.char) / n.no.extra.steps
-  if (proportion.viable == 1) {
-    return(NamedConstant(1, min.steps))
-  }
-  n.iter <- min(max.iter, round(expected.minima * proportion.viable))
-  if (n.iter == max.iter) warning ("Will truncate number of iterations at max.iter = ", max.iter)
-  analytic.ic0 <- -log(n.no.extra.steps/NUnrooted(sum(split))) / log(2)
-  #analytic.ic1<- -log(n.one.extra.step/NUnrooted(sum(split))) / log(2)
-  #analytic.ic1<- -log((n.no.extra.steps + n.one.extra.step)/NUnrooted(sum(split))) / log(2)
+  minSteps <- length(split) - 1
+  if (minSteps == 0) return (NamedConstant(1, 0))
+  
+  nNoExtraSteps <- NUnrootedMult(split)
+  #nOneExtraStep <- WithOneExtraStep(split)
+  proportionViable <- NUnrooted(charLen) / nNoExtraSteps
+  if (proportionViable == 1) return(NamedConstant(1, minSteps))
+  
+  nIter <- min(maxIter, round(expectedMinima * proportionViable))
+  if (nIter == maxIter) warning ("Will truncate number of iterations at maxIter = ", maxIter)
+  analyticIc0 <- -log(nNoExtraSteps/NUnrooted(sum(split))) / log(2)
+  #analyticIc1<- -log(nOneExtraStep/NUnrooted(sum(split))) / log(2)
+  #analyticIc1<- -log((nNoExtraSteps + nOneExtraStep)/NUnrooted(sum(split))) / log(2)
 
-  cat(c('  ', signif(analytic.ic0, ceiling(log10(max.iter))), 'bits @ 0 extra steps; using', n.iter, 'iterations to estimate cost of further steps.\n'))
-  # cat(c(round(analytic.ic0, 3), 'bits @ 0 extra steps;', round(analytic.ic1, 3), '@ 1; attempting', n.iter, 'iterations.\n'))
-  trees <- RandomTrees(n.iter, n.char)
+  cat('  Token count', split, "=", signif(analyticIc0, ceiling(log10(maxIter))), 'bits @ 0 extra steps; using', nIter, 'iterations to estimate cost of further steps.\n')
+  # cat(c(round(analyticIc0, 3), 'bits @ 0 extra steps;', round(analyticIc1, 3), '@ 1; attempting', nIter, 'iterations.\n'))
+  trees <- RandomTrees(nIter, charLen)  ## TODO make more efficient by randomising trees that are already in postorder
   steps <- vapply(trees, function (tree, char) {
-    tree <- reorder(tree, "postorder")
-    tree.edge <- tree$edge
-    tip.label <- tree$tip.label
-    parent <- tree.edge[, 1]
-    child  <- tree.edge[, 2]
-    n.edge <- length(parent)
-    max.node <- max(parent)
-    stopifnot(max.node == max(tree$edge))
-    n.tip <- length(tip.label)
-    result <- .Call("FITCH", as.integer(char[tip.label, ]), as.integer(1), 
-        as.integer(parent), as.integer(child), as.integer(n.edge), 
-        as.double(1), as.integer(max.node), as.integer(n.tip), PACKAGE = "phangorn")
-    result
+    tree <- TreeSearch::Postorder(tree)
+    treeEdge <- tree$edge
+    tipLabel <- tree$tip.label
+    parent <- treeEdge[, 1]
+    child  <- treeEdge[, 2]
+    nEdge <- length(parent)
+    maxNode <- max(parent)
+    stopifnot(maxNode == max(tree$edge))
+    nTip <- length(tipLabel)
+    result <- .Call("FITCH", as.integer(char[tipLabel, ]), as.integer(1), 
+        as.integer(parent), as.integer(child), as.integer(nEdge), 
+        as.double(1), as.integer(maxNode), as.integer(nTip), PACKAGE = "phangorn")
+        ## TODO avoid namespace lookup by registering our own copy of FITCH
     ret <- result[[1]]
     ret
   }, double(1), char)
 
-  analytic.steps <- n.iter * c(n.no.extra.steps) / NUnrooted(sum(split))
-  #analytic.steps <- n.iter * c(n.no.extra.steps, n.one.extra.step) / NUnrooted(sum(split))
-  names(analytic.steps) <- min.steps
-  #names(analytic.steps) <- min.steps + 0:1
-  ##analytic.steps
-  tab.steps <- table(steps[steps > (min.steps + 0)])
-  #tab.steps <- table(steps[steps > (min.steps + 1)])
-  tab.steps <- c(analytic.steps, tab.steps * (n.iter - sum(analytic.steps)) / sum(tab.steps))
-  p.steps   <- tab.steps / sum(tab.steps)
+  analyticSteps <- nIter * c(nNoExtraSteps) / NUnrooted(sum(split))
+  #analyticSteps <- nIter * c(nNoExtraSteps, nOneExtraStep) / NUnrooted(sum(split))
+  names(analyticSteps) <- minSteps
+  #names(analyticSteps) <- minSteps + 0:1
+  ##analyticSteps
+  tabSteps <- table(steps[steps > (minSteps + 0)]) # Quicker than table(steps)[-0]
+  #tabSteps <- table(steps[steps > (minSteps + 1)])
+  tabSteps <- c(analyticSteps, tabSteps * (nIter - sum(analyticSteps)) / sum(tabSteps))
+  pSteps <- tabSteps / sum(tabSteps)
   
-  return(p.steps)
-  #ICSteps  <- -log(cumsum(p.steps)) / log(2)
-  #return(rbind(tab.steps, p.steps, ICSteps))
+  return(pSteps)
+  #ICSteps  <- -log(cumsum(pSteps)) / log(2)
+  #return(rbind(tabSteps, pSteps, ICSteps))
   #summry <- double(length(ICSteps))
   #summry[1:2] <- c(mean(steps), var(steps))
-  #return(rbind(tab.steps, p.steps, ICSteps, summry))
+  #return(rbind(tabSteps, pSteps, ICSteps, summry))
 }
 
 WithOneExtraStep <- function (split) {
@@ -175,13 +176,13 @@ FitchSite <- function (tree, data) {
   { #phangorn:::fit.fitch
     if (is.null(attr(tree, "order")) || attr(tree, "order") == "cladewise") 
         tree <- reorder(tree, "postorder")
-    tree.edge <- tree$edge
-    node <- tree.edge[, 1]
-    edge <- tree.edge[, 2]
+    treeEdge <- tree$edge
+    node <- treeEdge[, 1]
+    edge <- treeEdge[, 2]
     weight <- attrData$weight
-    m <- max(tree.edge)
+    m <- max(treeEdge)
     q <- length(tree$tip)
-    result <- .Call("FITCH", data.[, tree$tip.label], as.integer(nr), 
+    result <- .Call("FITCH", data.[, tree$tipLabel], as.integer(nr), 
         as.integer(node), as.integer(edge), as.integer(length(edge)), 
         as.double(weight), as.integer(m), as.integer(q), PACKAGE = "phangorn")
     return(result[[2]])
@@ -189,35 +190,35 @@ FitchSite <- function (tree, data) {
 }
 
 Evaluate <- function (tree, data) {
-  total.steps <- FitchSite(tree, data)
+  totalSteps <- FitchSite(tree, data)
   chars <- matrix(unlist(data), attr(data, 'nr'))
-  ambiguous.token <- which(attr(data, 'allLevels') == "?")
+  ambiguousToken <- which(attr(data, 'allLevels') == "?")
   as.splits <- apply(chars, 1, function (x) {
     ret <- table(x)
-    ret[names(ret) != ambiguous.token] 
+    ret[names(ret) != ambiguousToken] 
   })
   if (class(as.splits) == 'matrix') as.splits <- lapply(seq_len(ncol(as.splits)), function(i) as.splits[, i])
   ic.max <- round(vapply(as.splits, function (split) -log(NUnrootedMult(split)/NUnrooted(sum(split)))/log(2), double(1)), 12)
-  info.losses <- apply(chars, 1, ICSteps, ambiguous.token=ambiguous.token, max.iter=1000)
-  info.amounts <- lapply(info.losses, function(p) {
+  infoLosses <- apply(chars, 1, ICSteps, ambiguousToken=ambiguousToken, maxIter=1000)
+  infoAmounts <- lapply(infoLosses, function(p) {
     #cat(length(p))
-    cump <- cumsum(p)
-    n.steps <- as.integer(names(p))
-    infer <- min(n.steps):max(n.steps)
-    infer <- infer[!(infer %in% n.steps)]
-    calculated.p <- double(max(n.steps))
-    calculated.p[n.steps] <- cump
+    cumP <- cumsum(p)
+    nSteps <- as.integer(names(p))
+    infer <- min(nSteps):max(nSteps)
+    infer <- infer[!(infer %in% nSteps)]
+    calculatedP <- double(max(nSteps))
+    calculatedP[nSteps] <- cumP
     if (length(infer)) {
-      fitL <- nls(cump ~ SSlogis(n.steps, Asym, xmid, scal))  # Receiving error in p[69
-      calculated.p[infer]   <- LogisticPoints(infer, fitL)
+      fitL <- nls(cumP ~ SSlogis(nSteps, Asym, xmid, scal))  # Receiving error in p[69
+      calculatedP[infer]   <- LogisticPoints(infer, fitL)
     }
-    calc.ic <- -log(calculated.p) / log(2)
-    calc.ic
+    calcIC <- -log(calculatedP) / log(2)
+    calcIC
   })
   
-  info.used <- double(length(total.steps))
-  for (i in seq_along(total.steps)) {
-    if (total.steps[i] > 0) info.used[i] <- info.amounts[[i]][total.steps[i]]
+  info.used <- double(length(totalSteps))
+  for (i in seq_along(totalSteps)) {
+    if (totalSteps[i] > 0) info.used[i] <- infoAmounts[[i]][totalSteps[i]]
   }
   info.lost <- round(ic.max - info.used, 13)
   index <- attr(data, 'index')
@@ -232,27 +233,32 @@ Evaluate <- function (tree, data) {
   return(c(signal.noise, info.retained/info.needed))
 }
 
+#' @returns information content of each extra step, in bits
+#' @export
 InfoAmounts <- function (data, precision=400000) {
   # The below is simplified from info_extra_step.r::evaluate
   # Assumes no ambiguous tokens & 2 tokens, '1' and '2'
-  data.nr <- attr(data, "nr")
-  chars <- matrix(c(unlist(data), rep(1, data.nr), rep(2, data.nr)), data.nr) # add 
+  dataNr <- attr(data, "nr")
+  chars <- matrix(c(unlist(data), rep(1, dataNr), rep(2, dataNr)), dataNr) # add 
   splits <- apply(chars, 1, table) - 1
-  info.losses <- apply(splits, 2, ICPerStep, max.iter=precision)
-  ret <- lapply(info.losses, function(p) {
-    cump <- cumsum(p)
-    n.steps <- as.integer(names(p))
-    infer <- min(n.steps):max(n.steps)
-    infer <- infer[!(infer %in% n.steps)]
-    calculated.p <- double(max(n.steps))
-    calculated.p[n.steps] <- cump
+  infoLosses <- apply(splits, 2, ICPerStep, maxIter=precision)
+  
+  blankReturn <- double(max(colSums(splits)))
+  ret <- vapply(infoLosses, function(p) {
+    calcIC <- blankReturn
+    cumP <- cumsum(p)
+    nSteps <- as.integer(names(p))
+    infer <- min(nSteps):max(nSteps)
+    infer <- infer[!(infer %in% nSteps)]
+    calculatedP <- double(max(nSteps))
+    calculatedP[nSteps] <- cumP
     if (length(infer)) {
-      fitL <- nls(cump ~ SSlogis(n.steps, Asym, xmid, scal))
-      calculated.p[infer] <- LogisticPoints(infer, fitL)
+      fitL <- nls(cumP ~ SSlogis(nSteps, Asym, xmid, scal))
+      calculatedP[infer] <- LogisticPoints(infer, fitL)
       warning('Concavity function generated by approximation')
     }
-    calc.ic <- -log(calculated.p) / log(2)
-    calc.ic
-  })
-  ret
+    calcIC[seq_along(calculatedP)] <- -log(calculatedP) / log(2)
+    calcIC
+  }, blankReturn)
+  ret[rowSums(ret) > 0, ]
 }

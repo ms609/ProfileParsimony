@@ -66,8 +66,8 @@ PhyDat <- function (data, levels = NULL, compress = TRUE, ...) {
   data
 }
 
-Min <- function (x, inapp.level) {
-  if (length(inapp.level)) return(sum(2^(c(0:(inapp.level-2), inapp.level:12)) %in% unique(x)))
+Min <- function (x, inappLevel) {
+  if (length(inappLevel)) return(sum(2^(c(0:(inappLevel-2), inappLevel:12)) %in% unique(x)))
   return (sum(2^(0:12) %in% unique(x)))
 }
 
@@ -79,13 +79,7 @@ PrepareDataFitch <- function (data, precision = 400000) {
   nChar <- at$nr
   cont <- attr(data, "contrast")
   nTip <- length(data)
-  info.amounts <- InfoAmounts(data, precision)
-  max.length <- max(vapply(info.amounts, length, integer(1)))
-  info <- array(0, dim=c(nChar, max.length))
-  for (i in 1:nChar) {
-      i.info <- info.amounts[[i]]
-      if (length(i.info)) info[i, 1:length(i.info)] <- i.info
-    }
+  
   at$names <- NULL
   powers.of.2 <- 2L ^ c(0L:(nLevel - 1L))
   tmp <- cont %*% powers.of.2
@@ -94,13 +88,13 @@ PrepareDataFitch <- function (data, precision = 400000) {
   ret <- tmp[data] 
   ret <- as.integer(ret)
   attributes(ret) <- at
-  inapp.level <- which(at$levels == "-")
-  attr(ret, 'inapp.level') <- 2 ^ (inapp.level - 1)
+  inappLevel <- which(at$levels == "-")
+  attr(ret, 'inappLevel') <- 2 ^ (inappLevel - 1)
   attr(ret, 'dim') <- c(nChar, nTip)  
-  attr(ret, 'unique.tokens') <- apply(ret, 1, function(x) Min(x, inapp.level))
-  applicable.tokens <- setdiff(powers.of.2, 2 ^ (inapp.level - 1))
-  attr(ret, 'split.sizes') <- apply(ret, 1, function(x) vapply(applicable.tokens, function (y) sum(x == y), integer(1)))
-  attr(ret, 'info.amounts') <- info
+  attr(ret, 'unique.tokens') <- apply(ret, 1, function(x) Min(x, inappLevel))
+  applicableTokens <- setdiff(powers.of.2, 2 ^ (inappLevel - 1))
+  attr(ret, 'split.sizes') <- t(apply(ret, 1, function(x) vapply(applicableTokens, function (y) sum(x == y), integer(1))))
+  attr(ret, 'info.amounts') <- t(InfoAmounts(data, precision))
   dimnames(ret) <- list(NULL, nam)
   class(ret) <- 'fitchDat'
   ret
