@@ -66,11 +66,6 @@ PhyDat <- function (data, levels = NULL, compress = TRUE, ...) {
   data
 }
 
-Min <- function (x, inappLevel) {
-  if (length(inappLevel)) return(sum(2^(c(0:(inappLevel-2), inappLevel:12)) %in% unique(x)))
-  return (sum(2^(0:12) %in% unique(x)))
-}
-
 PrepareDataFitch <- function (data, precision = 400000) {
 # Written with reference to phangorn:::prepareDataFitch
   at <- attributes(data)
@@ -91,10 +86,10 @@ PrepareDataFitch <- function (data, precision = 400000) {
   inappLevel <- which(at$levels == "-")
   attr(ret, 'inappLevel') <- 2 ^ (inappLevel - 1)
   attr(ret, 'dim') <- c(nChar, nTip)  
-  attr(ret, 'unique.tokens') <- apply(ret, 1, function(x) Min(x, inappLevel))
   applicableTokens <- setdiff(powers.of.2, 2 ^ (inappLevel - 1))
   attr(ret, 'split.sizes') <- t(apply(ret, 1, function(x) vapply(applicableTokens, function (y) sum(x == y), integer(1))))
-  attr(ret, 'info.amounts') <- t(InfoAmounts(data, precision))
+  attr(ret, 'info.amounts') <- InfoAmounts(data, precision)
+  attr(ret, 'bootstrap') <- list('info.amounts', 'split.sizes')
   dimnames(ret) <- list(NULL, nam)
   class(ret) <- 'fitchDat'
   ret

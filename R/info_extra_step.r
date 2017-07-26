@@ -74,7 +74,7 @@ ICSteps <- function (char, ambiguousToken = 0, expectedMinima = 25, maxIter = 10
   #analyticIc1<- -log(nOneExtraStep/NUnrooted(sum(split))) / log(2)
   #analyticIc1<- -log((nNoExtraSteps + nOneExtraStep)/NUnrooted(sum(split))) / log(2)
 
-  cat('  Token count', split, "=", signif(analyticIc0, ceiling(log10(maxIter))), 'bits @ 0 extra steps; using', nIter, 'iterations to estimate cost of further steps.\n')
+  cat('  Token count', split, "=", signif(analyticIc0, ceiling(log10(maxIter))), 'bits @ 0 extra steps; simulating', nIter, 'trees to estimate cost of further steps.\n')
   # cat(c(round(analyticIc0, 3), 'bits @ 0 extra steps;', round(analyticIc1, 3), '@ 1; attempting', nIter, 'iterations.\n'))
   trees <- RandomTrees(nIter, charLen)  ## TODO make more efficient by randomising trees that are already in postorder
   steps <- vapply(trees, function (tree, char) {
@@ -154,43 +154,9 @@ LogisticPoints <- function (x, fitted.model) {
   y
 }
 
-FitchSite <- function (tree, data) {
-  if (class(data) != "phyDat") stop("data must be of class phyDat")
-  { #phangorn:::prepareDataFitch
-    attrData <- attributes(data)
-    lev <- attrData$levels
-    l <- length(lev)
-    nr <- attrData$nr
-    nc <- length(data)
-    contrast <- attrData$contrast
-    tmp <- contrast %*% 2L^c(0L:(l - 1L))
-    tmp <- as.integer(tmp)
-    nam <- attrData$names
-    attrData$names <- NULL
-    data. <- unlist(data, FALSE, FALSE)
-    data. <- as.integer(tmp[data.])
-    attributes(data.) <- attrData
-    attr(data., "dim") <- c(nr, nc)
-    dimnames(data.) <- list(NULL, nam)
-  }
-  { #phangorn:::fit.fitch
-    if (is.null(attr(tree, "order")) || attr(tree, "order") == "cladewise") 
-        tree <- reorder(tree, "postorder")
-    treeEdge <- tree$edge
-    node <- treeEdge[, 1]
-    edge <- treeEdge[, 2]
-    weight <- attrData$weight
-    m <- max(treeEdge)
-    q <- length(tree$tip)
-    result <- .Call("FITCH", data.[, tree$tipLabel], as.integer(nr), 
-        as.integer(node), as.integer(edge), as.integer(length(edge)), 
-        as.double(weight), as.integer(m), as.integer(q), PACKAGE = "phangorn")
-    return(result[[2]])
-  }
-}
 
 Evaluate <- function (tree, data) {
-  totalSteps <- FitchSite(tree, data)
+  totalSteps <- TreeSearch::FitchSteps(tree, data)
   chars <- matrix(unlist(data), attr(data, 'nr'))
   ambiguousToken <- which(attr(data, 'allLevels') == "?")
   as.splits <- apply(chars, 1, function (x) {
