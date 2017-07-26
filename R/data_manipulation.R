@@ -79,8 +79,8 @@ PrepareDataFitch <- function (data, precision = 400000) {
   powers.of.2 <- 2L ^ c(0L:(nLevel - 1L))
   tmp <- cont %*% powers.of.2
   tmp <- as.integer(tmp)
-  data <- unlist(data, FALSE, FALSE)
-  ret <- tmp[data] 
+  data <- unlist(data, recursive=FALSE, use.names=FALSE)
+  ret <- tmp[data]
   ret <- as.integer(ret)
   attributes(ret) <- at
   inappLevel <- which(at$levels == "-")
@@ -88,8 +88,8 @@ PrepareDataFitch <- function (data, precision = 400000) {
   attr(ret, 'dim') <- c(nChar, nTip)  
   applicableTokens <- setdiff(powers.of.2, 2 ^ (inappLevel - 1))
   attr(ret, 'split.sizes') <- t(apply(ret, 1, function(x) vapply(applicableTokens, function (y) sum(x == y), integer(1))))
-  attr(ret, 'info.amounts') <- InfoAmounts(data, precision)
-  attr(ret, 'bootstrap') <- list('info.amounts', 'split.sizes')
+  attr(ret, 'info.amounts') <- InfoAmounts(ret, precision)
+  attr(ret, 'bootstrap') <- c('info.amounts', 'split.sizes')
   dimnames(ret) <- list(NULL, nam)
   class(ret) <- 'fitchDat'
   ret

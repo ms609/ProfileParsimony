@@ -77,22 +77,19 @@ ICSteps <- function (char, ambiguousToken = 0, expectedMinima = 25, maxIter = 10
   cat('  Token count', split, "=", signif(analyticIc0, ceiling(log10(maxIter))), 'bits @ 0 extra steps; simulating', nIter, 'trees to estimate cost of further steps.\n')
   # cat(c(round(analyticIc0, 3), 'bits @ 0 extra steps;', round(analyticIc1, 3), '@ 1; attempting', nIter, 'iterations.\n'))
   trees <- RandomTrees(nIter, charLen)  ## TODO make more efficient by randomising trees that are already in postorder
+  
+  nEdge   <- 2L * charLen - 2L
+  maxNode <- 2L * charLen - 1L
+  
+    
   steps <- vapply(trees, function (tree, char) {
     tree <- TreeSearch::Postorder(tree)
     treeEdge <- tree$edge
     tipLabel <- tree$tip.label
     parent <- treeEdge[, 1]
     child  <- treeEdge[, 2]
-    nEdge <- length(parent)
-    maxNode <- max(parent)
-    stopifnot(maxNode == max(tree$edge))
-    nTip <- length(tipLabel)
-    result <- .Call("FITCH", as.integer(char[tipLabel, ]), as.integer(1), 
-        as.integer(parent), as.integer(child), as.integer(nEdge), 
-        as.double(1), as.integer(maxNode), as.integer(nTip), PACKAGE = "phangorn")
-        ## TODO avoid namespace lookup by registering our own copy of FITCH
-    ret <- result[[1]]
-    ret
+    return(C_Fitch_Score(char[tipLabel, ], nChar=1L, parent, child, nEdge, weight=1L,
+        maxNode, nTip=charLen))    
   }, double(1), char)
 
   analyticSteps <- nIter * c(nNoExtraSteps) / NUnrooted(sum(split))
@@ -154,7 +151,6 @@ LogisticPoints <- function (x, fitted.model) {
   y
 }
 
-
 Evaluate <- function (tree, data) {
   totalSteps <- TreeSearch::FitchSteps(tree, data)
   chars <- matrix(unlist(data), attr(data, 'nr'))
@@ -205,7 +201,11 @@ InfoAmounts <- function (data, precision=400000) {
   # The below is simplified from info_extra_step.r::evaluate
   # Assumes no ambiguous tokens & 2 tokens, '1' and '2'
   dataNr <- attr(data, "nr")
-  chars <- matrix(c(unlist(data), rep(1, dataNr), rep(2, dataNr)), dataNr) # add 
+  chars <- if (is.null(dim(data))) {
+    matrix(c(unlist(data), rep(1, dataNr), rep(2, dataNr)), dataNr)
+  } else {
+    cbind(data[seq_len(dataNr), ], matrix(c(1, 2), nrow=dataNr, ncol=2, byrow=TRUE))
+  }
   splits <- apply(chars, 1, table) - 1
   infoLosses <- apply(splits, 2, ICPerStep, maxIter=precision)
   
