@@ -17,8 +17,16 @@ FastTable <- function (data) {
   result                                                                              
 }   
 
-## phangorn::phyDat has inexplicably stopped working.  This function 'fixes' it
-## For simplicity I have not retained support for contrast matrices or ambiguity.
+#' Load phyDat object
+#'
+#' A convenient wrapper for \pkg{phangorn}'s \code{phyDat}
+#'
+#' @param data data table, perhaps from read.nexus.data
+#' @param levels tokens - values that all characters migkt take
+#' @param compress Compress identical transformation series into a single row of the phyDat object
+#' For simplicity I have not retained support for contrast matrices or ambiguity.
+#' @return a \code{phyDat} object
+#' @export
 PhyDat <- function (data, levels = NULL, compress = TRUE, ...) {
   if (is.null(levels)) stop("Levels not supplied")
   nam <- names(data)

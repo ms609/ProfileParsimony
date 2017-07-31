@@ -2,6 +2,7 @@
 
 S3method(unique,multiPhylo)
 export(InfoAmounts)
+export(PhyDat)
 export(PrepareDataProfile)
 export(ProfileScore)
 importFrom(TreeSearch,FitchSteps)
