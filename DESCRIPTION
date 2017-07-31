@@ -10,3 +10,4 @@ Depends: ape, memoise, TreeSearch
 Suggests: phangorn
 LazyData: true
 License: MIT
+RoxygenNote: 6.0.1

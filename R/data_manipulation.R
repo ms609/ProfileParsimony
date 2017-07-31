@@ -66,8 +66,16 @@ PhyDat <- function (data, levels = NULL, compress = TRUE, ...) {
   data
 }
 
+#' Prepare data for Profile Parsimony
+#' 
+#' @param data dataset of class \code{phyDat}
+#' @param precision number of random trees to generate when calculating Profile curves
+#'
+#' @return a dataset of class 'profileDat'
+#'
+#' @author Martin R. Smith; written with reference to phangorn:::prepareDataFitch
+#' @export
 PrepareDataProfile <- function (data, precision = 400000) {
-# Written with reference to phangorn:::prepareDataFitch
   at <- attributes(data)
   nam <- at$names
   nLevel <- length(at$level)

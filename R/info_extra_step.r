@@ -195,7 +195,15 @@ Evaluate <- function (tree, data) {
   return(c(signal.noise, info.retained/info.needed))
 }
 
-#' @returns information content of each extra step, in bits
+#' Amount of information in each character
+#'
+#' @param data dataset of class \code{phyDat}
+#' @param precision number of random trees to generate when calculating Profile curves
+#'
+#' @return information content of each extra step, in bits
+#' 
+#' @author Martin R. Smith
+#'
 #' @export
 InfoAmounts <- function (data, precision=400000) {
   # The below is simplified from info_extra_step.r::evaluate

@@ -1,3 +1,4 @@
+#' @export
 unique.multiPhylo <- function (x, incomparables = FALSE, use.edge.length = FALSE, 
                                use.tip.label = TRUE) {
   n <- length(x)

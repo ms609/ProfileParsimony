@@ -1,27 +1,41 @@
-#' Profile Score
+#' Profile Parsimony Score
 #'
-#' Calculate a tree's Profile Parsimony score, after Faith and Trueman (2001)
+#' Calculate a tree's Profile Parsimony score with a given dataset, after Faith and Trueman (2001)
 #'
 #' @template treeParam
-#' @param data Dataset of class \code{phyDat} or (preferably) \code{profileDat} 
-#'             (see \code{\link{PrepareDataProfile}})
+#' @param dataset Dataset of class \code{profileDat} (see \code{\link{PrepareDataProfile}})
+#'                Alternatively, a dataset of class \code{phyDat} can be provided, and will 
+#'                be (time-consumingly) converted within the function.
+#'
 #' @return Zero minus the profile score (because the optimization algorithm assumes that
 #'         smaller numbers are better)
-#' @importFrom TreeSearch FitchSteps
-#' @importFrom TreeSearch TipsAreColumns
+#'
+#' @references
+#'    Faith, D. P. & Trueman, J. W. H. (2001). \cite{Towards an inclusive philosophy for 
+#'    phylogenetic inference.} Systematic Biology 50:3, 331-350, doi: 
+#'    \href{http://dx.doi.org/10.1080/10635150118627}{10.1080/10635150118627}
+#'
+#' @examples
+#'   data(referenceTree)
+#'   data(congreveLamsdellMatrices)
+#'   dataset <- PrepareDataFitch (congreveLamsdellMatrices[[42]])
+#'   ProfileScore(referenceTree, dataset)
 #'
 #' @author Martin R. Smith
 #'
+#' @importFrom TreeSearch FitchSteps
+#' @importFrom TreeSearch TipsAreColumns
+#' @keywords tree
 #' @export
-ProfileScore <- function (tree, data) {
-  if (class(data) == 'phyDat') data <- PrepareDataProfile(data)
-  if (class(data) != 'fitchDat') {
-    stop('Invalid data type; prepare data with PhyDat() or PrepareDataProfile().')
+ProfileScore <- function (tree, dataset) {
+  if (class(dataset) == 'phyDat') dataset <- PrepareDataProfile(dataset)
+  if (class(dataset) != 'fitchDat') {
+    stop('Invalid dataset type; prepare dataset with PhyDat() or PrepareDataProfile().')
   }
-  at <- attributes(data)
+  at <- attributes(dataset)
   nChar  <- at$nr # strictly, transformation series patterns; these'll be upweighted later
   weight <- at$weight
-  steps <- TreeSearch::FitchSteps(tree, data, TreeSearch::TipsAreColumns, at)
+  steps <- TreeSearch::FitchSteps(tree, dataset, TreeSearch::TipsAreColumns, at)
   info <- at$info.amounts
   nRowInfo <- nrow(info)
   return (-sum(vapply(seq_len(nChar), function (i) {
