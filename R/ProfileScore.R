@@ -29,7 +29,7 @@
 #' @export
 ProfileScore <- function (tree, dataset) {
   if (class(dataset) == 'phyDat') dataset <- PrepareDataProfile(dataset)
-  if (class(dataset) != 'fitchDat') {
+  if (class(dataset) != 'profileDat') {
     stop('Invalid dataset type; prepare dataset with PhyDat() or PrepareDataProfile().')
   }
   at <- attributes(dataset)
