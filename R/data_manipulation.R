@@ -66,7 +66,7 @@ PhyDat <- function (data, levels = NULL, compress = TRUE, ...) {
   data
 }
 
-PrepareDataFitch <- function (data, precision = 400000) {
+PrepareDataProfile <- function (data, precision = 400000) {
 # Written with reference to phangorn:::prepareDataFitch
   at <- attributes(data)
   nam <- at$names
@@ -91,6 +91,6 @@ PrepareDataFitch <- function (data, precision = 400000) {
   attr(ret, 'info.amounts') <- InfoAmounts(ret, precision)
   attr(ret, 'bootstrap') <- c('info.amounts', 'split.sizes')
   dimnames(ret) <- list(NULL, nam)
-  class(ret) <- 'fitchDat'
+  class(ret) <- 'profileDat'
   ret
 }

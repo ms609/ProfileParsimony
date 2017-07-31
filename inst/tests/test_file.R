@@ -18,7 +18,7 @@ source(paste0(ROOT, '../../Information/ProfileParsimony/R/data_manipulation.R'))
   sillyData <- lapply(1:22, function (i) c( rep(0, i - 1), rep(1, 22 - i), rep(1, 22 - i), rep(0, i - 1)))#, sample(2, 20, replace=TRUE)-1))
   names(sillyData) <- as.character(1:22)
   dataset <- PhyDat(sillyData, 0:1)
-  readyData <- PrepareDataFitch(dataset, 12000)
+  readyData <- PrepareDataProfile(dataset, 12000)
   
   rTree <- RandomTree(dataset)
   FitchScore(rTree, dataset, TipsAreNames)

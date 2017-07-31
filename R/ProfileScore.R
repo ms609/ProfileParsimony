@@ -1,17 +1,22 @@
 #' Profile Score
 #'
+#' Calculate a tree's Profile Parsimony score, after Faith and Trueman (2001)
+#'
 #' @template treeParam
-#' @param data Dataset of class \code{fitchDat} 
-#' @returns Zero minus the profile score (because the optimization algorithm assumes that
-#' smaller numbers are better)
+#' @param data Dataset of class \code{phyDat} or (preferably) \code{profileDat} 
+#'             (see \code{\link{PrepareDataProfile}})
+#' @return Zero minus the profile score (because the optimization algorithm assumes that
+#'         smaller numbers are better)
 #' @importFrom TreeSearch FitchSteps
 #' @importFrom TreeSearch TipsAreColumns
-#' @keywords internal
+#'
+#' @author Martin R. Smith
+#'
 #' @export
 ProfileScore <- function (tree, data) {
-  if (class(data) == 'phyDat') data <- PrepareDataFitch(data)
+  if (class(data) == 'phyDat') data <- PrepareDataProfile(data)
   if (class(data) != 'fitchDat') {
-    stop('Invalid data type; prepare data with PhyDat() or PrepareDataFitch().')
+    stop('Invalid data type; prepare data with PhyDat() or PrepareDataProfile().')
   }
   at <- attributes(data)
   nChar  <- at$nr # strictly, transformation series patterns; these'll be upweighted later
