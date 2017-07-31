@@ -35,7 +35,7 @@ ProfileScore <- function (tree, dataset) {
   at <- attributes(dataset)
   nChar  <- at$nr # strictly, transformation series patterns; these'll be upweighted later
   weight <- at$weight
-  steps <- TreeSearch::FitchSteps(tree, dataset, TreeSearch::TipsAreColumns, at)
+  steps <- TreeSearch::FitchSteps(tree, dataset, TipData=TreeSearch::TipsAreColumns, at)
   info <- at$info.amounts
   nRowInfo <- nrow(info)
   return (-sum(vapply(seq_len(nChar), function (i) {
