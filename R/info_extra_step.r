@@ -167,7 +167,7 @@ NUnrootedMult  <- function (splits) {  # Carter et al. 1990, Theorem 2
 #'   character <- c(rep(1, 10), rep(2, 5))
 #'   ICSteps (character)
 #' }
-#' @importFrom TreeSearch Postorder
+#' @importFrom TreeSearch Postorder C_Fitch_Score
 #' @export
 ICSteps <- function (char, ambiguousToken = 0, expectedMinima = 25, maxIter = 10000) {
   char <- matrix(2 ^ char[char != ambiguousToken], ncol = 1)
@@ -329,7 +329,7 @@ Evaluate <- function (tree, dataset) {
 #' @author Martin R. Smith
 #'
 #' @export
-InfoAmounts <- function (dataset, precision=400000) {
+InfoAmounts <- function (dataset, precision=4e+05) {
   # The below is simplified from info_extra_step.r::evaluate
   # Assumes no ambiguous tokens & 2 tokens, '1' and '2'
   dataNr <- attr(dataset, "nr")

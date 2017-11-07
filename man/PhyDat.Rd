@@ -4,10 +4,10 @@
 \alias{PhyDat}
 \title{Load phyDat object}
 \usage{
-PhyDat(data, levels = NULL, compress = TRUE, ...)
+PhyDat(dataset, levels = NULL, compress = TRUE, ...)
 }
 \arguments{
-\item{data}{data table, perhaps from read.nexus.data}
+\item{dataset}{data table, perhaps from read.nexus.data}
 
 \item{levels}{tokens - values that all characters migkt take}
 
