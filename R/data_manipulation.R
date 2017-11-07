@@ -1,9 +1,9 @@
 ## Copied from phangorn file phyDat.R.  Edited for style only.
-FastTable <- function (data) {                                                                                 
-  if(!is.data.frame(data)) {
-    data <- as.data.frame(data, stringsAsFactors = FALSE)                    
+FastTable <- function (dataset) {                                                                                 
+  if(!is.data.frame(dataset)) {
+    dataset <- as.data.frame(dataset, stringsAsFactors = FALSE)                    
   }
-  da <- do.call("paste", c(data, sep = "\r"))
+  da <- do.call("paste", c(dataset, sep = "\r"))
   ind <- !duplicated(da)
   levels <- da[ind]
   cat <- factor(da, levels = levels)
@@ -13,7 +13,7 @@ FastTable <- function (data) {
   bin <- bin[!is.na(bin)]
   if (length(bin)) bin <- bin + 1
   y <- tabulate(bin, pd)
-  result <- list(index = bin, weights = y, data = data[ind,])
+  result <- list(index = bin, weights = y, dataset = dataset[ind,])
   result                                                                              
 }   
 
@@ -21,62 +21,62 @@ FastTable <- function (data) {
 #'
 #' A convenient wrapper for \pkg{phangorn}'s \code{phyDat}
 #'
-#' @param data data table, perhaps from read.nexus.data
+#' @param dataset data table, perhaps from read.nexus.data
 #' @param levels tokens - values that all characters migkt take
 #' @param compress Compress identical transformation series into a single row of the phyDat object
 #' For simplicity I have not retained support for contrast matrices or ambiguity.
 #' @return a \code{phyDat} object
 #' @export
-PhyDat <- function (data, levels = NULL, compress = TRUE, ...) {
+PhyDat <- function (dataset, levels = NULL, compress = TRUE, ...) {
   if (is.null(levels)) stop("Levels not supplied")
-  nam <- names(data)
-  # data <- as.data.frame(t(data), stringsAsFactors = FALSE)
-  if (length(data[[1]]) == 1) {
+  nam <- names(dataset)
+  # dataset <- as.data.frame(t(dataset), stringsAsFactors = FALSE)
+  if (length(dataset[[1]]) == 1) {
       compress <- FALSE
   }
   if (compress) {
-    ddd    <- FastTable(data)
-    data   <- ddd$data
-    weight <- ddd$weight
-    index  <- ddd$index
-    n.rows <- length(data[[1]])
+    ddd     <- FastTable(dataset)
+    dataset <- ddd$dataset
+    weight  <- ddd$weight
+    index   <- ddd$index
+    n.rows  <- length(dataset[[1]])
   } else {
-    n.rows <- length(data[[1]])
+    n.rows <- length(dataset[[1]])
     weight <- rep(1, n.rows)
     index <- 1:n.rows
   }
   n.levels <- length(levels)
   contrast <- diag(n.levels)
   all.levels <- levels
-  att <- attributes(data)
-  data <- lapply(data, match, all.levels)
-  attributes(data) <- att
-  row.names(data) <- as.character(1:n.rows)
-  data <- na.omit(data)
-  tmp  <- match(index, attr(data, "na.action"))
+  att <- attributes(dataset)
+  dataset <- lapply(dataset, match, all.levels)
+  attributes(dataset) <- att
+  row.names(dataset) <- as.character(1:n.rows)
+  dataset <- na.omit(dataset)
+  tmp  <- match(index, attr(dataset, "na.action"))
   index <- index[is.na(tmp)]
   index <- match(index, unique(index))
-  rn <- as.numeric(rownames(data))
-  attr(data, "na.action") <- NULL
+  rn <- as.numeric(rownames(dataset))
+  attr(dataset, "na.action") <- NULL
   weight <- weight[rn]
-  n.rows <- dim(data)[1]
-  names(data) <- nam
-  attr(data, "row.names") <- NULL
-  attr(data, "weight")    <- weight
-  attr(data, "nr")        <- n.rows
-  attr(data, "nc")        <- length(levels)
-  attr(data, "index")     <- index
-  attr(data, "levels")    <- levels
-  attr(data, "allLevels") <- all.levels
-  attr(data, "type")      <- "USER"
-  attr(data, "contrast")  <- contrast
-  class(data)             <- "phyDat"
-  data
+  n.rows <- dim(dataset)[1]
+  names(dataset) <- nam
+  attr(dataset, "row.names") <- NULL
+  attr(dataset, "weight")    <- weight
+  attr(dataset, "nr")        <- n.rows
+  attr(dataset, "nc")        <- length(levels)
+  attr(dataset, "index")     <- index
+  attr(dataset, "levels")    <- levels
+  attr(dataset, "allLevels") <- all.levels
+  attr(dataset, "type")      <- "USER"
+  attr(dataset, "contrast")  <- contrast
+  class(dataset)             <- "phyDat"
+  dataset
 }
 
 #' Prepare data for Profile Parsimony
 #' 
-#' @param data dataset of class \code{phyDat}
+#' @param dataset dataset of class \code{phyDat}
 #' @param precision number of random trees to generate when calculating Profile curves. 
 #'                  With 22 tokens (taxa), a precision increase of 4e+05 to 8e+05 sees
 #'                  little difference in most steps; 80% of the differences are within 
@@ -87,20 +87,20 @@ PhyDat <- function (data, levels = NULL, compress = TRUE, ...) {
 #'
 #' @author Martin R. Smith; written with reference to phangorn:::prepareDataFitch
 #' @export
-PrepareDataProfile <- function (data, precision = 4e+05) {
-  at <- attributes(data)
+PrepareDataProfile <- function (dataset, precision = 4e+05) {
+  at <- attributes(dataset)
   nam <- at$names
   nLevel <- length(at$level)
   nChar <- at$nr
-  cont <- attr(data, "contrast")
-  nTip <- length(data)
+  cont <- attr(dataset, "contrast")
+  nTip <- length(dataset)
   
   at$names <- NULL
   powers.of.2 <- 2L ^ c(0L:(nLevel - 1L))
   tmp <- cont %*% powers.of.2
   tmp <- as.integer(tmp)
-  data <- unlist(data, recursive=FALSE, use.names=FALSE)
-  ret <- tmp[data]
+  dataset <- unlist(dataset, recursive=FALSE, use.names=FALSE)
+  ret <- tmp[dataset]
   ret <- as.integer(ret)
   attributes(ret) <- at
   inappLevel <- which(at$levels == "-")
