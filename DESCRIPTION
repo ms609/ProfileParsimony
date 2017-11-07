@@ -1,13 +1,22 @@
 Package: ProfileParsimony
 Type: Package
 Title: Phylogenetic Inference by Profile Parsimony
-Version: 0.2.1
-Date: 2017-07-26
-Author: Martin R. Smith
-Maintainer: Martin R. Smith <martins@gmail.com>
-Description: Conduct a phylogenetic tree search using the profile parsimony concavity function as the optimality criterion
-Depends: ape, memoise, TreeSearch
-Suggests: phangorn
+Version: 0.2.1.9000
+Date: 2017-11-07
+Authors@R: c(person("Martin R.", 'Smith',
+                  email="martins@gmail.com", 
+                  role=c("aut", "cre", "cph"), 
+                  comment=c(ORCID = "0000-0001-5660-1727")))
+Description: Conduct a phylogenetic tree search using the profile parsimony concavity function as the optimality criterion. See FAITH, D. P. and TRUEMAN, J. W. H. (2001). Towards an inclusive philosophy for phylogenetic inference. Systematic Biology, 50, 331–350. <doi:10.1080/10635150118627>
+Depends: R (>= 3.4.0)
+Imports: ape (>= 4.1), 
+         memoise, 
+         TreeSearch
+Suggests: phangorn,
+          testthat
 LazyData: true
-License: MIT
+ByteCompile: true
+License: GPL (>= 2)
+URL: https://github.com/ms609/ProfileParsimony
+BugReports: https://github.com/ms609/TreeSearch/ProfileParsimony
 RoxygenNote: 6.0.1
