@@ -18,12 +18,12 @@
 #' @examples
 #'   data(referenceTree)
 #'   data(congreveLamsdellMatrices)
-#'   dataset <- PrepareDataFitch (congreveLamsdellMatrices[[42]])
+#'   dataset <- PrepareDataFitch(congreveLamsdellMatrices[[42]])
 #'   ProfileScore(referenceTree, dataset)
 #'
 #' @author Martin R. Smith
 #'
-#' @importFrom TreeSearch FitchSteps
+#' @importFrom TreeSearch Fitch C_Fitch_Steps TipsAreColumns
 #' @importFrom TreeSearch TipsAreColumns
 #' @keywords tree
 #' @export
@@ -35,7 +35,7 @@ ProfileScore <- function (tree, dataset) {
   at <- attributes(dataset)
   nChar  <- at$nr # strictly, transformation series patterns; these'll be upweighted later
   weight <- at$weight
-  steps <- TreeSearch::FitchSteps(tree, dataset, TipData=TreeSearch::TipsAreColumns, at)
+  steps <- Fitch(tree, dataset, TipData=TipsAreColumns, at, FitchFunction=C_Fitch_Steps)
   info <- at$info.amounts
   nRowInfo <- nrow(info)
   return (-sum(vapply(seq_len(nChar), function (i) {

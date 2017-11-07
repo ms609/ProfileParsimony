@@ -1,0 +1,1 @@
+#' @param data dataset of class \code{phyDat}

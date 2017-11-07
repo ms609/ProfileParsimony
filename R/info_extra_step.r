@@ -49,6 +49,31 @@ DoubleFactorial <- function (ints) {
 }
 
 #' Number of rooted trees
+#' These functions return the number of rooted or unrooted trees consistent with a given pattern
+#'  of splits.
+#'
+#' 
+#' Functions starting N return the number of rooted or unrooted trees, functions starting Ln
+#' provide the log of this number.  Calculations follow Carter et al. 1990, Theorem 2.
+#'
+#' @param tips The number of tips.
+#' @param extra the number of points at which another branch cannot be added.
+#' @param splits vector listing the number of taxa in each tree bipartition.
+#'
+#' @author Martin R. Smith
+#' 
+#' @references 
+#' Carter, M., Hendy, M., & Penny, D. (1990). \cite{On the distribution of lengths of evolutionary 
+#' trees.} SIAM Journal on Discrete Mathematics, 3(1), 38-47. doi:
+#' \href{http://doi.org/10.1137/0403005}{10.1137/0403005}
+#' @examples
+#'   NRooted(10)
+#'   NUnrooted(10)
+#'   LnRooted(10)
+#'   LnUnrooted(10)
+#'   # Number of trees consistent with a character whose states are 00000 11111 222
+#'   NUnrootedMult(c(5,5,3))
+#' 
 #' @export
 NRooted     <- memoise(function (tips, extra=0)  DFact(2 * tips - 3 - extra))
 #' @describeIn NRooted Number of unrooted trees
@@ -105,7 +130,43 @@ NUnrootedMult  <- function (splits) {  # Carter et al. 1990, Theorem 2
   round(DFact(2 * total.tips - 5) / DFact(2 * (total.tips - length(splits)) - 1) * prod(vapply(2 * splits - 3, DFact, double(1))))
 }
 
-#' Information content of steps
+#' Information Content Steps
+#'
+#'   This function estimates the information content of a character \code{char} when e extra steps
+#'   are present, for all possible values of e.
+#' 
+#' @param char The character in question.
+#' @param ambiguous.token Which token, if any, corresponds to the ambigious token (?)
+#'                          (not yet fully implemented).
+#' @param expected.minima sample enough trees that the rarest step counts is expected to be seen
+#'                          at least this many times.
+#' @param max.iter Maximum iterations to conduct.
+#' 
+#' Calculates the number of trees consistent with the character having \emph{e} extra steps, where
+#' e ranges from its minimum possible value (i.e. number of different tokens minus one) to its
+#' maximum.  The number of trees with no extra steps can be calculated exactly; the number of trees
+#' with more additional steps must be approximated.
+#' The function samples \code{n.iter} trees, or enough trees that the trees with the minimum number 
+#' of steps will be recovered at least \code{expected.minima} times, in order to obtain precise 
+#' results.
+#' 
+#' @author{
+#' Martin R. Smith
+#' }
+#' @references{
+#' 
+#' Faith, D. P. & Trueman, J. W. H. (2001). \cite{Towards an inclusive philosophy for phylogenetic
+#' inference.} Systematic Biology 50:3, 331-350, doi:
+#' \href{http://dx.doi.org/10.1080/10635150118627}{10.1080/10635150118627}
+#' 
+#' }
+#' @keywords tree
+#' 
+#' @examples{
+#'   # A character that is present in ten taxa and absent in five
+#'   character <- c(rep(1, 10), rep(2, 5))
+#'   ICSteps (character)
+#' }
 #' @export
 ICSteps <- function (char, ambiguousToken = 0, expectedMinima = 25, maxIter = 10000) {
   char <- matrix(2 ^ char[char != ambiguousToken], ncol = 1)
@@ -207,11 +268,15 @@ LogisticPoints <- function (x, fitted.model) {
   y
 }
 
+#' Evaluate tree
+#' @template treeParam
+#' @template datasetParam
+#' @importFrom TreeSearch Fitch C_Fitch_Steps
 #' @export
-Evaluate <- function (tree, data) {
-  totalSteps <- TreeSearch::FitchSteps(tree, data)
-  chars <- matrix(unlist(data), attr(data, 'nr'))
-  ambiguousToken <- which(attr(data, 'allLevels') == "?")
+Evaluate <- function (tree, dataset) {
+  totalSteps <- Fitch(tree, dataset, FitchFunction = C_Fitch_Steps)
+  chars <- matrix(unlist(dataset), attr(dataset, 'nr'))
+  ambiguousToken <- which(attr(dataset, 'allLevels') == "?")
   as.splits <- apply(chars, 1, function (x) {
     ret <- table(x)
     ret[names(ret) != ambiguousToken] 
@@ -240,21 +305,22 @@ Evaluate <- function (tree, data) {
     if (totalSteps[i] > 0) info.used[i] <- infoAmounts[[i]][totalSteps[i]]
   }
   info.lost <- round(ic.max - info.used, 13)
-  index <- attr(data, 'index')
+  index <- attr(dataset, 'index')
   total.info <- sum(ic.max[index])
   info.misleading <- sum(info.lost[index])
   proportion.lost <- info.misleading / total.info
-  info.needed <- -log(1 / NUnrooted(length(data))) / log(2)
+  info.needed <- -log(1 / NUnrooted(length(dataset))) / log(2)
   info.overkill <- total.info / info.needed
   info.retained <- sum(info.used[index])
   signal.noise <- info.retained / info.misleading
   cat("\n", total.info, 'bits, of which', round(info.retained, 2), 'kept,', round(total.info - info.retained, 2), 'lost,', round(info.needed, 2), 'needed.  SNR =', signal.noise, "\n")
-  return(c(signal.noise, info.retained/info.needed))
+  # Return:
+  c(signal.noise, info.retained/info.needed)
 }
 
 #' Amount of information in each character
 #'
-#' @param data dataset of class \code{phyDat}
+#' @template datasetParam
 #' @param precision number of random trees to generate when calculating Profile curves
 #'
 #' @return information content of each extra step, in bits
@@ -262,14 +328,14 @@ Evaluate <- function (tree, data) {
 #' @author Martin R. Smith
 #'
 #' @export
-InfoAmounts <- function (data, precision=400000) {
+InfoAmounts <- function (dataset, precision=400000) {
   # The below is simplified from info_extra_step.r::evaluate
   # Assumes no ambiguous tokens & 2 tokens, '1' and '2'
-  dataNr <- attr(data, "nr")
-  chars <- if (is.null(dim(data))) {
-    matrix(c(unlist(data), rep(1, dataNr), rep(2, dataNr)), dataNr)
+  dataNr <- attr(dataset, "nr")
+  chars <- if (is.null(dim(dataset))) {
+    matrix(c(unlist(dataset), rep(1, dataNr), rep(2, dataNr)), dataNr)
   } else {
-    cbind(data[seq_len(dataNr), ], matrix(c(1, 2), nrow=dataNr, ncol=2, byrow=TRUE))
+    cbind(dataset[seq_len(dataNr), ], matrix(c(1, 2), nrow=dataNr, ncol=2, byrow=TRUE))
   }
   splits <- apply(chars, 1, table) - 1
   infoLosses <- apply(splits, 2, ICPerStep, maxIter=precision)
