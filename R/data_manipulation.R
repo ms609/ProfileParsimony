@@ -87,7 +87,7 @@ PhyDat <- function (data, levels = NULL, compress = TRUE, ...) {
 #'
 #' @author Martin R. Smith; written with reference to phangorn:::prepareDataFitch
 #' @export
-PrepareDataProfile <- function (data, precision = 400000) {
+PrepareDataProfile <- function (data, precision = 4e+05) {
   at <- attributes(data)
   nam <- at$names
   nLevel <- length(at$level)
