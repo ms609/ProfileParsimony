@@ -88,7 +88,7 @@ PhyDat <- function (dataset, levels = NULL, compress = TRUE, ...) {
 #'
 #' @author Martin R. Smith; written with reference to phangorn:::prepareDataFitch
 #' @export
-PrepareDataProfile <- function (dataset, precision = 4e+05, warn=TRUE) {
+PrepareDataProfile <- function (dataset, precision = 4e+05, warn = TRUE) {
   at <- attributes(dataset)
   nam <- at$names
   nLevel <- length(at$level)
@@ -109,7 +109,7 @@ PrepareDataProfile <- function (dataset, precision = 4e+05, warn=TRUE) {
   attr(ret, 'dim') <- c(nChar, nTip)  
   applicableTokens <- setdiff(powers.of.2, 2 ^ (inappLevel - 1))
   attr(ret, 'split.sizes') <- apply(ret, 1, function(x) vapply(applicableTokens, function (y) sum(x == y), integer(1)))
-  attr(ret, 'info.amounts') <- InfoAmounts(ret, precision, warn)
+  attr(ret, 'info.amounts') <- InfoAmounts(ret, precision, warn=warn)
   attr(ret, 'bootstrap') <- c('info.amounts', 'split.sizes')
   dimnames(ret) <- list(NULL, nam)
   class(ret) <- 'profileDat'

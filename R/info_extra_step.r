@@ -1,11 +1,22 @@
 #' Information content per step
+#' @template splitsParam
+#' @param maxIter number of iterations to use when estimating concavity constant
+#' @template warnParam
 #' @export
-ICPerStep <- function(splits, maxIter) ICS(min(splits), max(splits), maxIter)
+ICPerStep <- function(splits, maxIter, warn=TRUE) ICS(min(splits), max(splits), maxIter, warn)
 
-#' Information content per step
+#' @describeIn ICPerStep Memoized calculating function
+#'
+#' @param a \code{min(splits)}.
+#' @param b \code{max(splits)}.
+#' @param m \code{maxIter}.
+#' @template warnParam
+#'
 #' @importFrom R.cache addMemoization
+#' @keywords internal
 #' @export
-ICS <- addMemoization(function(a, b, m) ICSteps(c(rep(1, a), rep(2, b)), maxIter=m))
+ICS <- addMemoization(function(a, b, m, warn=TRUE)
+                        ICSteps(c(rep(1, a), rep(2, b)), maxIter=m, warn=warn))
 
 #' Random trees
 #' @importFrom memoise memoise
@@ -141,6 +152,7 @@ NUnrootedMult  <- function (splits) {  # Carter et al. 1990, Theorem 2
 #' @param expected.minima sample enough trees that the rarest step counts is expected to be seen
 #'                          at least this many times.
 #' @param max.iter Maximum iterations to conduct.
+#' @template warnParam
 #' 
 #' Calculates the number of trees consistent with the character having \emph{e} extra steps, where
 #' e ranges from its minimum possible value (i.e. number of different tokens minus one) to its
@@ -169,7 +181,8 @@ NUnrootedMult  <- function (splits) {  # Carter et al. 1990, Theorem 2
 #' }
 #' @importFrom TreeSearch Postorder C_Fitch_Score
 #' @export
-ICSteps <- function (char, ambiguousToken = 0, expectedMinima = 25, maxIter = 10000) {
+ICSteps <- function (char, ambiguousToken = 0, expectedMinima = 25, maxIter = 10000,
+                     warn = TRUE) {
   char <- matrix(2 ^ char[char != ambiguousToken], ncol = 1)
   rownames(char) <- paste0('t', seq_along(char))
   charLen <- length(char)
@@ -184,20 +197,26 @@ ICSteps <- function (char, ambiguousToken = 0, expectedMinima = 25, maxIter = 10
   if (proportionViable == 1) return(NamedConstant(1, minSteps))
   
   nIter <- min(maxIter, round(expectedMinima * proportionViable))
-  if (nIter == maxIter) warning ("Will truncate number of iterations at maxIter = ", maxIter)
+  if (nIter == maxIter && warn) warning ("Will truncate number of iterations at maxIter = ", maxIter)
   analyticIc0 <- -log(nNoExtraSteps/NUnrooted(sum(split))) / log(2)
   #analyticIc1<- -log(nOneExtraStep/NUnrooted(sum(split))) / log(2)
   #analyticIc1<- -log((nNoExtraSteps + nOneExtraStep)/NUnrooted(sum(split))) / log(2)
-
-  cat('  Token count', split, "=", signif(analyticIc0, ceiling(log10(maxIter))), 'bits @ 0 extra steps; simulating', nIter, 'trees to estimate cost of further steps.\n')
-  # cat(c(round(analyticIc0, 3), 'bits @ 0 extra steps;', round(analyticIc1, 3), '@ 1; attempting', nIter, 'iterations.\n'))
+  if (warn) {
+    cat('  Token count', split, "=", signif(analyticIc0, ceiling(log10(maxIter))),
+        'bits @ 0 extra steps; simulating', nIter, 
+        'trees to estimate cost of further steps.\n')
+    # cat(c(round(analyticIc0, 3), 'bits @ 0 extra steps;', round(analyticIc1, 3),
+    #    '@ 1; attempting', nIter, 'iterations.\n'))
+  }
   trees <- RandomTrees(nIter, charLen)  ## TODO make more efficient by randomising trees that are already in postorder
   
   nEdge   <- 2L * charLen - 2L
   maxNode <- 2L * charLen - 1L
-  
     
   steps <- vapply(trees, function (tree, char) {
+    # TODO make enormously faster by loading the data once, then running morphyScore on 
+    # a heap of trees.  We can also win by generating random edge matrices, rather than
+    # entire trees.
     tree <- Postorder(tree)
     treeEdge <- tree$edge
     tipLabel <- tree$tip.label
@@ -272,9 +291,10 @@ LogisticPoints <- function (x, fitted.model) {
 #' Evaluate tree
 #' @template treeParam
 #' @template datasetParam
+#' @template warnParam
 #' @importFrom TreeSearch Fitch C_Fitch_Steps
 #' @export
-Evaluate <- function (tree, dataset) {
+Evaluate <- function (tree, dataset, warn=TRUE) {
   totalSteps <- Fitch(tree, dataset, FitchFunction = C_Fitch_Steps)
   chars <- matrix(unlist(dataset), attr(dataset, 'nr'))
   ambiguousToken <- which(attr(dataset, 'allLevels') == "?")
@@ -284,7 +304,7 @@ Evaluate <- function (tree, dataset) {
   })
   if (class(as.splits) == 'matrix') as.splits <- lapply(seq_len(ncol(as.splits)), function(i) as.splits[, i])
   ic.max <- round(vapply(as.splits, function (split) -log(NUnrootedMult(split)/NUnrooted(sum(split)))/log(2), double(1)), 12)
-  infoLosses <- apply(chars, 1, ICSteps, ambiguousToken=ambiguousToken, maxIter=1000)
+  infoLosses <- apply(chars, 1, ICSteps, ambiguousToken=ambiguousToken, maxIter=1000, warn=warn)
   infoAmounts <- lapply(infoLosses, function(p) {
     #cat(length(p))
     cumP <- cumsum(p)
@@ -340,7 +360,7 @@ InfoAmounts <- function (dataset, precision=4e+05, warn=TRUE) {
     cbind(dataset[seq_len(dataNr), ], matrix(c(1, 2), nrow=dataNr, ncol=2, byrow=TRUE))
   }
   splits <- apply(chars, 1, table) - 1
-  infoLosses <- apply(splits, 2, ICPerStep, maxIter=precision)
+  infoLosses <- apply(splits, 2, ICPerStep, maxIter=precision, warn=warn)
   
   blankReturn <- double(max(colSums(splits)))
   ret <- vapply(infoLosses, function(p) {
