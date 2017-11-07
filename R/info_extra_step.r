@@ -1,16 +1,31 @@
-library(memoise)
+#' Information content per step
+#' @export
 ICPerStep <- function(splits, maxIter) ICS(min(splits), max(splits), maxIter)
-ICS <- memoise(function(a, b, m) ICSteps(c(rep(1, a), rep(2, b)), maxIter=m))
 
+#' Information content per step
+#' @importFrom R.cache addMemoization
+#' @export
+ICS <- addMemoization(function(a, b, m) ICSteps(c(rep(1, a), rep(2, b)), maxIter=m))
+
+#' Random trees
+#' @importFrom memoise memoise
+#' @export
 RandomTrees <- memoise (function(N, n) unclass(rmtree(N, n)))
 NamedConstant <- function(X, name) {names(X) <- name; return(X)}
 
-LDFactorial <- memoise (function (x) {
-  # memoized version of phangorn::ldfactorial
-  x <- (x + 1) / 2
-  res <- lgamma(2 * x) - (lgamma(x) + (x - 1) * log(2))
-  res
-})
+#' Log double factorial
+#' 
+#' Memoised version of phangorn's \code{\link[phangorn]{ldfactorial}}
+#' @importFrom phangorn ldfactorial
+#' @importFrom memoise memoise
+#' @export
+LDFactorial <- memoise(ldfactorial)
+
+#' Log double factorial
+#' Handles odd and even inout numbers
+#' @param x a positive integer
+#' @importFrom memoise memoise
+#' @export
 LDFact <- memoise(function (x) {
   if (x < 2) return (0) 
   if (x %% 2) {
@@ -19,41 +34,79 @@ LDFact <- memoise(function (x) {
     lfactorial(x) - LDFactorial(x - 1L)
   }
 })
+
+#' Double factorial
+#' @param x a positive integer
+#' @export
 DFact <- memoise(function (x) exp(LDFact(x)))
-DoubleFactorial <- function (x) {
-  x[] <- vapply(x, DFact, double(1))
-  x
+
+#' @describeIn DFact
+#' @param ints a vector of integers
+#' @export
+DoubleFactorial <- function (ints) {
+  ints[] <- vapply(ints, DFact, double(1))
+  ints
 }
 
+#' Number of rooted trees
+#' @export
 NRooted     <- memoise(function (tips, extra=0)  DFact(2 * tips - 3 - extra))
+#' @describeIn NRooted Number of unrooted trees
+#' @export
 NUnrooted1  <- memoise(function (tips, extra=0)  DFact(2 * tips - 5 - extra))
+#' @describeIn NRooted  Log Number of unrooted trees
+#' @export
 LnUnrooted1 <- memoise(function (tips, extra=0) LDFact(2 * tips - 5 - extra))
+#' @describeIn NRooted  Log Number of rooted trees
+#' @export
 LnRooted    <- memoise(function (tips, extra=0) LDFact(2 * tips - 3 - extra))
-N1Spr <- function (n) if (n > 2) 2 * (n - 3) * ((2 * n) - 7) else 0 # Trees exactly one SPR step away. Given by Allen and Steel 2001.
+#' Number of trees on SPR step away
+#' Formula given by Given by Allen and Steel 2001.
+#' @references ALLEN, B. L. and STEEL, M. 2001. Subtree transfer operations and their 
+#'             induced metrics on evolutionary trees. \emph{Annals of Combinatorics},
+#'             5, 1--15. <doi:10.1007/s00026-001-8006-8>
+#' @export
+N1Spr <- function (n) if (n > 2) 2 * (n - 3) * ((2 * n) - 7) else 0 
 
-IC1Spr <- function(n) -log2((1+N1Spr(n)) / NUnrooted(n)) # Information content of trees 0 or 1 SPR step from tree with n tips.
+#' @describeIn N1Spr Information content of trees 0 or 1 SPR step from tree with n tips.
+#' @export
+IC1Spr <- function(n) -log2((1+N1Spr(n)) / NUnrooted(n)) 
 
+#' @describeIn NRooted Log number of unrooted trees
+#' @template splitsParam
+#' @export
 LnUnrooted <- function (splits) {
   if ((n.splits <- length(splits)) < 2) return (LnUnrooted1(splits));
   if (n.splits == 2) return (LnRooted(splits[1]) + LnRooted(splits[2]));
   return (LnUnrootedMult(splits))
 }
+#' @describeIn NRooted Number of unrooted trees
+#' @export
 NUnrooted  <- function (splits) {
   if ((n.splits <- length(splits)) < 2) return (NUnrooted1(splits));
   if (n.splits == 2) return (NRooted(splits[1]) *  NRooted(splits[2]))
   return ( NUnrootedMult(splits))
 }
+#' @describeIn NRooted Log unrooted mult
+#' @references CARTER, M., HENDY, M., PENNY, D., SZEKELY, L. A. and WORMALD, N. C. 1990.
+#'             On the distribution of lengths of evolutionary trees. 
+#'             \emph{SIAM Journal on Discrete Mathematics}, 3, 38–47.
+#' @export
 LnUnrootedMult <- function (splits) {  # Carter et al. 1990, Theorem 2
   splits <- splits[splits > 0]
   total.tips <- sum(splits)
   LDFact(2 * total.tips - 5) - LDFact(2 * (total.tips - length(splits)) - 1) + sum(vapply(2 * splits - 3, LDFact, double(1)))
 }
+#' @describeIn NRooted Number of unrooted trees (mult)
+#' @export
 NUnrootedMult  <- function (splits) {  # Carter et al. 1990, Theorem 2
   splits <- splits[splits > 0]
   total.tips <- sum(splits)
   round(DFact(2 * total.tips - 5) / DFact(2 * (total.tips - length(splits)) - 1) * prod(vapply(2 * splits - 3, DFact, double(1))))
 }
 
+#' Information content of steps
+#' @export
 ICSteps <- function (char, ambiguousToken = 0, expectedMinima = 25, maxIter = 10000) {
   char <- matrix(2 ^ char[char != ambiguousToken], ncol = 1)
   rownames(char) <- paste0('t', seq_along(char))
@@ -110,6 +163,8 @@ ICSteps <- function (char, ambiguousToken = 0, expectedMinima = 25, maxIter = 10
   #return(rbind(tabSteps, pSteps, ICSteps, summry))
 }
 
+#' Numer of trees with one extra step
+#' @export
 WithOneExtraStep <- function (split) {
   # Ignore singletons, which can be added at the end...
   split.with.splittables <- split[split > 1]
@@ -145,12 +200,14 @@ WithOneExtraStep <- function (split) {
   )
 }
 
+#' @export
 LogisticPoints <- function (x, fitted.model) {
   coefL <- summary(fitted.model)$coef[, 1]
   y <- coefL[1] / (1 + exp((coefL[2] - x) / coefL[3]))
   y
 }
 
+#' @export
 Evaluate <- function (tree, data) {
   totalSteps <- TreeSearch::FitchSteps(tree, data)
   chars <- matrix(unlist(data), attr(data, 'nr'))

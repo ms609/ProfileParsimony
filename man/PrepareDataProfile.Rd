@@ -9,7 +9,11 @@ PrepareDataProfile(data, precision = 4e+05)
 \arguments{
 \item{data}{dataset of class \code{phyDat}}
 
-\item{precision}{number of random trees to generate when calculating Profile curves}
+\item{precision}{number of random trees to generate when calculating Profile curves. 
+With 22 tokens (taxa), a precision increase of 4e+05 to 8e+05 sees
+little difference in most steps; 80% of the differences are within 
+0.05 bits, and c. 95% within 0.20 bits
+values > 1e+06 consume enough memory to cause my 2012 desktop to struggle}
 }
 \value{
 a dataset of class 'profileDat'

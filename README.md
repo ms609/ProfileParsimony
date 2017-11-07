@@ -1,3 +1,11 @@
+[![Build Status](https://travis-ci.org/ms609/ProfileParsimony.svg?branch=master)](https://travis-ci.org/ms609/ProfileParsimony)
+[![codecov](https://codecov.io/gh/ms609/ProfileParsimony/branch/master/graph/badge.svg)](https://codecov.io/gh/ms609/ProfileParsimony)
+[![CRAN Status Badge](http://www.r-pkg.org/badges/version/ProfileParsimony)](https://cran.r-project.org/package=ProfileParsimony)
+<!--[![CRAN Downloads](http://cranlogs.r-pkg.org/badges/ProfileParsimony)](https://cran.r-project.org/package=ProfileParsimony)-->
+<!--[![Research software impact](http://depsy.org/api/package/cran/ProfileParsimony/badge.svg)](http://depsy.org/package/r/ProfileParsimony)-->
+[![Project Status: Inactive – The project has reached a stable, usable state but is no longer being actively developed; support/maintenance will be provided as time allows.](http://www.repostatus.org/badges/latest/inactive.svg)](http://www.repostatus.org/#inactive)
+
+
 # ProfileParsimony
 
 ProfileParsimony is an R package, built on Phangorn, to implement the Profile Parsimony approach
