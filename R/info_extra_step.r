@@ -40,7 +40,7 @@ LDFact <- memoise(function (x) {
 #' @export
 DFact <- memoise(function (x) exp(LDFact(x)))
 
-#' @describeIn DFact
+#' @describeIn DFact Accepts a vector as input
 #' @param ints a vector of integers
 #' @export
 DoubleFactorial <- function (ints) {
@@ -48,7 +48,7 @@ DoubleFactorial <- function (ints) {
   ints
 }
 
-#' Number of rooted trees
+#' Number of rooted/unrooted trees
 #' These functions return the number of rooted or unrooted trees consistent with a given pattern
 #'  of splits.
 #'
@@ -115,7 +115,7 @@ NUnrooted  <- function (splits) {
 #' @describeIn NRooted Log unrooted mult
 #' @references CARTER, M., HENDY, M., PENNY, D., SZEKELY, L. A. and WORMALD, N. C. 1990.
 #'             On the distribution of lengths of evolutionary trees. 
-#'             \emph{SIAM Journal on Discrete Mathematics}, 3, 38–47.
+#'             \emph{SIAM Journal on Discrete Mathematics}, 3, 38--47.
 #' @export
 LnUnrootedMult <- function (splits) {  # Carter et al. 1990, Theorem 2
   splits <- splits[splits > 0]
@@ -167,6 +167,7 @@ NUnrootedMult  <- function (splits) {  # Carter et al. 1990, Theorem 2
 #'   character <- c(rep(1, 10), rep(2, 5))
 #'   ICSteps (character)
 #' }
+#' @importFrom TreeSearch Postorder
 #' @export
 ICSteps <- function (char, ambiguousToken = 0, expectedMinima = 25, maxIter = 10000) {
   char <- matrix(2 ^ char[char != ambiguousToken], ncol = 1)
@@ -197,7 +198,7 @@ ICSteps <- function (char, ambiguousToken = 0, expectedMinima = 25, maxIter = 10
   
     
   steps <- vapply(trees, function (tree, char) {
-    tree <- TreeSearch::Postorder(tree)
+    tree <- Postorder(tree)
     treeEdge <- tree$edge
     tipLabel <- tree$tip.label
     parent <- treeEdge[, 1]

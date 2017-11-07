@@ -2,13 +2,23 @@
 % Please edit documentation in R/info_extra_step.r
 \name{DFact}
 \alias{DFact}
+\alias{DoubleFactorial}
 \title{Double factorial}
 \usage{
 DFact(x)
+
+DoubleFactorial(ints)
 }
 \arguments{
 \item{x}{a positive integer}
+
+\item{ints}{a vector of integers}
 }
 \description{
 Double factorial
 }
+\section{Functions}{
+\itemize{
+\item \code{DoubleFactorial}: Accepts a vector as input
+}}
+
