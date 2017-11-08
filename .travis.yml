@@ -1,0 +1,36 @@
+language: r
+r:
+ - 3.4.0
+ - devel
+cache: packages
+warnings_are_errors: true
+r_check_args: --as-cran
+   
+git:
+  depth: 5
+
+r_binary_packages:
+ - testthat
+
+r_packages:
+ - devtools
+ - roxygen2
+# - TreeSearch
+ - covr
+
+r_github_packages:
+ - ms609/TreeSearch
+ - ms609/inapplicable 
+  
+install:
+ - R -e "install.packages('devtools')"
+ - R -e "install.packages('ape')"
+ - R -e "install.packages('phangorn')"
+ - R -e "install.packages('testthat')"
+ - R -e "install.packages('roxygen2')"
+ - R -e "devtools::install_github('ms609/TreeSearch')"
+ - R -e "devtools::install_github('ms609/inapplicable')"
+ - R -e "devtools::document()"
+ 
+after_success:
+  - Rscript -e "install.packages('covr'); covr::codecov()"
