@@ -377,7 +377,7 @@ Evaluate <- function (tree, dataset, warn=TRUE) {
 #' @author Martin R. Smith
 #'
 #' @export
-InfoAmounts <- function (dataset, precision=4e+05, warn=TRUE) {
+InfoAmounts <- function (dataset, precision=1e+06, warn=TRUE) {
   # The below is simplified from info_extra_step.r::evaluate
   # Assumes no ambiguous tokens & 2 tokens, '1' and '2'
   dataNr <- attr(dataset, "nr")
