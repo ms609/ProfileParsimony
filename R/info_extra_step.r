@@ -236,7 +236,7 @@ ICSteps <- function (char, ambiguousToken = 0, expectedMinima = 25, maxIter = 10
   class(morphyObj) <- 'morphyPtr'
   on.exit(morphyObj <- UnloadMorphy(morphyObj))
   
-  steps <- replicate(maxIter, RandomTreeScore(charLen, morphyObj))
+  steps <- vapply(maxIter, function (xx) RandomTreeScore(charLen, morphyObj), integer(1))
 
 
 ##  steps <- vapply(trees, function (tree, char) {
