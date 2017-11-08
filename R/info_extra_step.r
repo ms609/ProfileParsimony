@@ -146,6 +146,14 @@ NUnrootedMult  <- function (splits) {  # Carter et al. 1990, Theorem 2
 #'   This function estimates the information content of a character \code{char} when e extra steps
 #'   are present, for all possible values of e.
 #' 
+#' Calculates the number of trees consistent with the character having \emph{e} extra steps, where
+#' \emph{e} ranges from its minimum possible value (i.e. number of different tokens minus one) to its
+#' maximum.  The number of trees with no extra steps can be calculated exactly; the number of trees
+#' with more additional steps must be approximated.
+#' The function samples \code{n.iter} trees, or enough trees that the trees with the minimum number 
+#' of steps will be recovered at least \code{expected.minima} times, in order to obtain precise 
+#' results.
+#'
 #' @param char The character in question.
 #' @param ambiguous.token Which token, if any, corresponds to the ambigious token (?)
 #'                          (not yet fully implemented).
@@ -154,13 +162,6 @@ NUnrootedMult  <- function (splits) {  # Carter et al. 1990, Theorem 2
 #' @param max.iter Maximum iterations to conduct.
 #' @template warnParam
 #' 
-#' Calculates the number of trees consistent with the character having \emph{e} extra steps, where
-#' e ranges from its minimum possible value (i.e. number of different tokens minus one) to its
-#' maximum.  The number of trees with no extra steps can be calculated exactly; the number of trees
-#' with more additional steps must be approximated.
-#' The function samples \code{n.iter} trees, or enough trees that the trees with the minimum number 
-#' of steps will be recovered at least \code{expected.minima} times, in order to obtain precise 
-#' results.
 #' 
 #' @author{
 #' Martin R. Smith
@@ -179,7 +180,9 @@ NUnrootedMult  <- function (splits) {  # Carter et al. 1990, Theorem 2
 #'   character <- c(rep(1, 10), rep(2, 5))
 #'   ICSteps (character)
 #' }
-#' @importFrom TreeSearch Postorder C_Fitch_Score
+#' @importFrom inapplicable mpl_new_Morphy mpl_translate_error mpl_init_Morphy 
+#'             mpl_attach_rawdata mpl_set_num_internal_nodes mpl_set_parsim_t
+#'             mpl_set_charac_weight mpl_apply_tipdata MorphyLength UnloadMorphy RandomTreeScore
 #' @export
 ICSteps <- function (char, ambiguousToken = 0, expectedMinima = 25, maxIter = 10000,
                      warn = TRUE) {
@@ -208,23 +211,47 @@ ICSteps <- function (char, ambiguousToken = 0, expectedMinima = 25, maxIter = 10
     # cat(c(round(analyticIc0, 3), 'bits @ 0 extra steps;', round(analyticIc1, 3),
     #    '@ 1; attempting', nIter, 'iterations.\n'))
   }
-  trees <- RandomTrees(nIter, charLen)  ## TODO make more efficient by randomising trees that are already in postorder
+  #######trees <- RandomTrees(nIter, charLen)  ## TODO make more efficient by randomising trees that are already in postorder
   
-  nEdge   <- 2L * charLen - 2L
-  maxNode <- 2L * charLen - 1L
-    
-  steps <- vapply(trees, function (tree, char) {
-    # TODO make enormously faster by loading the data once, then running morphyScore on 
-    # a heap of trees.  We can also win by generating random edge matrices, rather than
-    # entire trees.
-    tree <- Postorder(tree)
-    treeEdge <- tree$edge
-    tipLabel <- tree$tip.label
-    parent <- treeEdge[, 1]
-    child  <- treeEdge[, 2]
-    return(C_Fitch_Score(char[tipLabel, ], nChar=1L, parent, child, nEdge, weight=1L,
-        maxNode, nTip=charLen))    
-  }, double(1), char)
+  # Initialize morphy object 
+  morphyObj <- mpl_new_Morphy()
+  if(mpl_init_Morphy(charLen, 1, morphyObj) -> error) {
+    stop("Error ", mpl_translate_error(error), " in mpl_init_Morphy")
+  }
+  if(mpl_attach_rawdata(paste0(c(char, ';'), collapse=''), morphyObj) -> error) {
+    stop("Error ", mpl_translate_error(error), " in mpl_attach_rawdata")
+  }
+  if(mpl_set_num_internal_nodes(charLen - 1L, morphyObj) -> error) { # One is the 'dummy root'
+    stop("Error ", mpl_translate_error(error), " in mpl_set_num_internal_nodes")
+  }
+  if (mpl_set_parsim_t(1, 'FITCH', morphyObj) -> error) {
+      stop("Error ", mpl_translate_error(min(error)), "in mpl_set_parsim_t")
+  }
+  if (mpl_set_charac_weight(1, 1, morphyObj) -> error) {
+    stop("Error ", mpl_translate_error(min(error)), "in mpl_set_charac_weight")
+  }
+  if(mpl_apply_tipdata(morphyObj) -> error) {
+    stop("Error ", mpl_translate_error(error), "in mpl_apply_tipdata")
+  }
+  class(morphyObj) <- 'morphyPtr'
+  on.exit(morphyObj <- UnloadMorphy(morphyObj))
+  
+  steps <- replicate(maxIter, RandomTreeScore(charLen, morphyObj))
+
+
+##  steps <- vapply(trees, function (tree, char) {
+##    # TODO make enormously faster by loading the data once, then running morphyScore on 
+##    # a heap of trees.  We can also win by generating random edge matrices, rather than
+##    # entire trees.
+##    tree <- Postorder(tree)
+##    treeEdge <- tree$edge
+##    tipLabel <- tree$tip.label
+##    parent <- treeEdge[, 1]
+##    child  <- treeEdge[, 2]
+##    # Return:
+##    C_Fitch_Score(char[tipLabel, ], nChar=1L, parent, child, nEdge, weight=1L,
+##        maxNode, nTip=charLen)
+##  }, double (1), char)
 
   analyticSteps <- nIter * c(nNoExtraSteps) / NUnrooted(sum(split))
   #analyticSteps <- nIter * c(nNoExtraSteps, nOneExtraStep) / NUnrooted(sum(split))
