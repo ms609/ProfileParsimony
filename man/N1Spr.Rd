@@ -10,6 +10,9 @@ N1Spr(n)
 
 IC1Spr(n)
 }
+\arguments{
+\item{n}{Number of tips in tree.}
+}
 \description{
 Number of trees on SPR step away
 Formula given by Given by Allen and Steel 2001.

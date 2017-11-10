@@ -4,7 +4,7 @@
 \alias{PhyDat}
 \title{Load phyDat object}
 \usage{
-PhyDat(dataset, levels = NULL, compress = TRUE, ...)
+PhyDat(dataset, levels = NULL, compress = TRUE)
 }
 \arguments{
 \item{dataset}{data table, perhaps from read.nexus.data}

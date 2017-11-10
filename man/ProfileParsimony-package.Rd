@@ -107,8 +107,8 @@ contrast.matrix
 ## Apply the contrast matrix, using the phyDat format...
 my.phyDat <- PhyDat(my.data, type='USER', contrast=contrast.matrix)
 
-## ... and optimize the data for analysis 
-my.prepdata <- PrepareDataFitch(my.phyDat)
+## ... and prepare the data for analysis 
+my.prepdata <- PrepareDataProfile(my.phyDat)
 
 ## Specify the names of the outgroup taxa
 my.outgroup <- c('taxon1', 'taxon2')
@@ -139,7 +139,7 @@ plot(better.tree)
 ## Collect all trees that are suboptimal by up to 1.5 bits
 ## The trick here is to use large values of k and pratchiter, and small values of searchhits
 ## and searchiter, so that many runs don't quite hit the optimal tree.
-suboptimals <- Pratchet(RandomTree(my.prepdata), PrepareDataFitch(my.prepdata), 
+suboptimals <- Pratchet(RandomTree(my.prepdata), PrepareDataProfile(my.prepdata), 
                         all=TRUE, outgroup=my.outgroup, suboptimal=1.5, k=250, 
                         searchhits=10, searchiter=50, pratchiter=5000, rearrangements='TBR')
 

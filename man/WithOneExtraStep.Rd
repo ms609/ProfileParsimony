@@ -2,10 +2,13 @@
 % Please edit documentation in R/info_extra_step.r
 \name{WithOneExtraStep}
 \alias{WithOneExtraStep}
-\title{Numer of trees with one extra step}
+\title{Number of trees with one extra step}
 \usage{
-WithOneExtraStep(split)
+WithOneExtraStep(splits)
+}
+\arguments{
+\item{splits}{TBC}
 }
 \description{
-Numer of trees with one extra step
+Number of trees with one extra step
 }

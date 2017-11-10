@@ -6,6 +6,9 @@
 \usage{
 LDFactorial(x)
 }
+\arguments{
+\item{x}{(integer) number to crunch.}
+}
 \description{
 Memoised version of phangorn's \code{\link[phangorn]{ldfactorial}}
 }

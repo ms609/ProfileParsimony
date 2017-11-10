@@ -23,7 +23,7 @@ Calculate a tree's Profile Parsimony score with a given dataset, after Faith and
 \examples{
   data(referenceTree)
   data(congreveLamsdellMatrices)
-  dataset <- PrepareDataFitch(congreveLamsdellMatrices[[42]])
+  dataset <- PrepareDataProfile(congreveLamsdellMatrices[[42]])
   ProfileScore(referenceTree, dataset)
 
 }

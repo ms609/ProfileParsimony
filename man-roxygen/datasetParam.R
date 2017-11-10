@@ -1,1 +1,1 @@
-#' @param data dataset of class \code{phyDat}
+#' @param dataset dataset of class \code{phyDat}

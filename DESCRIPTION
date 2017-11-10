@@ -7,12 +7,14 @@ Authors@R: c(person("Martin R.", 'Smith',
                   email="martins@gmail.com", 
                   role=c("aut", "cre", "cph"), 
                   comment=c(ORCID = "0000-0001-5660-1727")))
-Description: Conduct a phylogenetic tree search using the profile parsimony concavity function as the optimality criterion. See FAITH, D. P. and TRUEMAN, J. W. H. (2001). Towards an inclusive philosophy for phylogenetic inference. Systematic Biology, 50, 331--350. <doi:10.1080/10635150118627>
+Description: Conduct a phylogenetic tree search using the profile parsimony concavity function as the optimality criterion. See FAITH, D. P. and TRUEMAN, J. W. H. (2001). Towards an inclusive philosophy for phylogenetic inference. Systematic Biology, 50, 331--350. <doi:10.1080/10635150118627>.
 Depends: R (>= 3.4.0)
 Imports: ape (>= 4.1), 
          inapplicable (> 0.2.3),
          memoise, 
          phangorn,
+         R.cache,
+         stats,
          TreeSearch
 Suggests: testthat
 LazyData: true

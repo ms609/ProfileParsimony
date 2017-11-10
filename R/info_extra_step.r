@@ -1,12 +1,16 @@
-#' Random trees
-#' @importFrom memoise memoise
+#' Named constant
+#' @param X a vector.
+#' @param name name to apply to the vector.
+#' @return the vector, named as requested
+#'
+#' @author Martin R. Smith
 #' @export
-RandomTrees <- memoise (function(N, n) unclass(rmtree(N, n)))
 NamedConstant <- function(X, name) {names(X) <- name; return(X)}
 
 #' Log double factorial
 #' 
 #' Memoised version of phangorn's \code{\link[phangorn]{ldfactorial}}
+#' @param x (integer) number to crunch.
 #' @importFrom phangorn ldfactorial
 #' @importFrom memoise memoise
 #' @export
@@ -76,8 +80,11 @@ LnUnrooted1 <- memoise(function (tips, extra=0) LDFact(2 * tips - 5 - extra))
 #' @describeIn NRooted  Log Number of rooted trees
 #' @export
 LnRooted    <- memoise(function (tips, extra=0) LDFact(2 * tips - 3 - extra))
+
 #' Number of trees on SPR step away
 #' Formula given by Given by Allen and Steel 2001.
+#'
+#' @param n Number of tips in tree.
 #' @references ALLEN, B. L. and STEEL, M. 2001. Subtree transfer operations and their 
 #'             induced metrics on evolutionary trees. \emph{Annals of Combinatorics},
 #'             5, 1--15. <doi:10.1007/s00026-001-8006-8>
@@ -89,7 +96,6 @@ N1Spr <- function (n) if (n > 2) 2 * (n - 3) * ((2 * n) - 7) else 0
 IC1Spr <- function(n) -log2((1+N1Spr(n)) / NUnrooted(n)) 
 
 #' @describeIn NRooted Log number of unrooted trees
-#' @template splitsParam
 #' @export
 LnUnrooted <- function (splits) {
   if ((n.splits <- length(splits)) < 2) return (LnUnrooted1(splits));
@@ -135,11 +141,11 @@ NUnrootedMult  <- function (splits) {  # Carter et al. 1990, Theorem 2
 #' results.
 #'
 #' @param char The character in question.
-#' @param ambiguous.token Which token, if any, corresponds to the ambigious token (?)
+#' @param ambiguousToken Which token, if any, corresponds to the ambigious token (?)
 #'                          (not yet fully implemented).
-#' @param expected.minima sample enough trees that the rarest step counts is expected to be seen
+#' @param expectedMinima sample enough trees that the rarest step counts is expected to be seen
 #'                          at least this many times.
-#' @param max.iter Maximum iterations to conduct.
+#' @param maxIter Maximum iterations to conduct.
 #' @template warnParam
 #' 
 #' 
@@ -232,32 +238,33 @@ ICS <- addMemoization(function(a, b, m, warn=TRUE)
 ICPerStep <- function(splits, maxIter, warn=TRUE) ICS(min(splits), max(splits), maxIter, warn)
 
 
-#' Numer of trees with one extra step
+#' Number of trees with one extra step
+#' @template splitsParam
 #' @export
-WithOneExtraStep <- function (split) {
+WithOneExtraStep <- function (splits) {
   # Ignore singletons, which can be added at the end...
-  split.with.splittables <- split[split > 1]
-  if (length(split.with.splittables) < 2) return (0)
+  splits.with.splitstables <- splits[splits > 1]
+  if (length(splits.with.splitstables) < 2) return (0)
   
-  # TODO test split: 1 1 2 4, split: 2 2 4
-  sum(vapply(seq_along(split), function (omit) {
-    backbone.splits <- split[-omit]
-    omitted.tips <- split[omit]
+  # TODO test splits: 1 1 2 4, splits: 2 2 4
+  sum(vapply(seq_along(splits), function (omit) {
+    backbone.splits <- splits[-omit]
+    omitted.tips <- splits[omit]
     if (omitted.tips < 2) return (0)
     backbone.tips <- sum(backbone.splits)
     backbones <- NUnrootedMult(backbone.splits)
     backbone.edges <- max(0, 2 * backbone.tips - 3)
     backbone.attachments <- backbone.edges * (backbone.edges - 1)
-    prod(sum( # Branch unambiguously split along first group
-      vapply(1:(omitted.tips - 1), function (first.group) { # For each way of splitting up the omitted tips, e.g. 1|16, 2|15, 3|14, etc
+    prod(sum( # Branch unambiguously splits along first group
+      vapply(1:(omitted.tips - 1), function (first.group) { # For each way of splitsting up the omitted tips, e.g. 1|16, 2|15, 3|14, etc
         choose(omitted.tips, first.group) * 
         NRooted(first.group) * NRooted(omitted.tips - first.group)
       }, double(1))
     ) / 2, backbone.attachments, backbones) + prod(
     # Second group added adjacent to first group, thus new edge could belong to the backbone or the omitted tip group
-    sum(vapply(1:(omitted.tips - 1), function (first.group) { # For each way of splitting up the omitted tips, e.g. 1|16, 2|15, 3|14, etc
+    sum(vapply(1:(omitted.tips - 1), function (first.group) { # For each way of splitsting up the omitted tips, e.g. 1|16, 2|15, 3|14, etc
         choose(omitted.tips, first.group) * 
-        NRooted(first.group) * NRooted(omitted.tips - first.group) # backbone tips have already been split - when we selected a branch
+        NRooted(first.group) * NRooted(omitted.tips - first.group) # backbone tips have already been splits - when we selected a branch
       }, double(1))) / 2,
     backbones,
     backbone.edges,
@@ -281,6 +288,7 @@ LogisticPoints <- function (x, fitted.model) {
 #' @template datasetParam
 #' @template warnParam
 #' @importFrom TreeSearch Fitch C_Fitch_Steps
+#' @importFrom stats nls
 #' @export
 Evaluate <- function (tree, dataset, warn=TRUE) {
   totalSteps <- Fitch(tree, dataset, FitchFunction = C_Fitch_Steps)

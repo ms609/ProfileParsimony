@@ -27,7 +27,7 @@ FastTable <- function (dataset) {
 #' For simplicity I have not retained support for contrast matrices or ambiguity.
 #' @return a \code{phyDat} object
 #' @export
-PhyDat <- function (dataset, levels = NULL, compress = TRUE, ...) {
+PhyDat <- function (dataset, levels = NULL, compress = TRUE) {
   if (is.null(levels)) stop("Levels not supplied")
   nam <- names(dataset)
   # dataset <- as.data.frame(t(dataset), stringsAsFactors = FALSE)

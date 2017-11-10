@@ -35,8 +35,6 @@ NUnrootedMult(splits)
 \item{extra}{the number of points at which another branch cannot be added.}
 
 \item{splits}{vector listing the number of taxa in each tree bipartition.}
-
-\item{splits}{TBC}
 }
 \description{
 Functions starting N return the number of rooted or unrooted trees, functions starting Ln
