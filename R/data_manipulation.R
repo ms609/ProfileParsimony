@@ -26,6 +26,7 @@ FastTable <- function (dataset) {
 #' @param compress Compress identical transformation series into a single row of the phyDat object
 #' For simplicity I have not retained support for contrast matrices or ambiguity.
 #' @return a \code{phyDat} object
+#' @importFrom stats na.omit
 #' @export
 PhyDat <- function (dataset, levels = NULL, compress = TRUE) {
   if (is.null(levels)) stop("Levels not supplied")

@@ -168,7 +168,9 @@ NUnrootedMult  <- function (splits) {  # Carter et al. 1990, Theorem 2
 #' }
 #' @importFrom inapplicable mpl_new_Morphy mpl_translate_error mpl_init_Morphy 
 #'             mpl_attach_rawdata mpl_set_num_internal_nodes mpl_set_parsim_t
-#'             mpl_set_charac_weight mpl_apply_tipdata MorphyLength UnloadMorphy RandomTreeScore
+#'             mpl_set_charac_weight mpl_apply_tipdata 
+#'             SingleCharMorphy MorphyLength UnloadMorphy 
+#'             RandomTreeScore
 #' @export
 ICSteps <- function (char, ambiguousToken = 0, expectedMinima = 25, maxIter = 10000,
                      warn = TRUE) {
@@ -276,11 +278,19 @@ WithOneExtraStep <- function (splits) {
   )
 }
 
+#' Logistic Points
+#' Extract points from a fitted model
+#'
+#' @param x an integer vector giving x co-ordinates.
+#' @param fittedModel a fitted model, perhaps generated using \kbd{nls(cumP ~ SSlogis(nSteps, Asym, xmid, scal))}.
+#'
+#' @return values of y co-ordinates corresponding to the x co-ordinates provided
+#' @author Martin R. Smith
 #' @export
-LogisticPoints <- function (x, fitted.model) {
-  coefL <- summary(fitted.model)$coef[, 1]
-  y <- coefL[1] / (1 + exp((coefL[2] - x) / coefL[3]))
-  y
+LogisticPoints <- function (x, fittedModel) {
+  coefL <- summary(fittedModel)$coef[, 1]
+  # Return:
+  coefL[1] / (1 + exp((coefL[2] - x) / coefL[3]))
 }
 
 #' Evaluate tree
@@ -310,8 +320,8 @@ Evaluate <- function (tree, dataset, warn=TRUE) {
     calculatedP <- double(max(nSteps))
     calculatedP[nSteps] <- cumP
     if (length(infer)) {
-      fitL <- nls(cumP ~ SSlogis(nSteps, Asym, xmid, scal))  # Receiving error in p[69
-      calculatedP[infer]   <- LogisticPoints(infer, fitL)
+      fitL <- nls(cumP ~ SSlogis(nSteps, Asym, xmid, scal))
+      calculatedP[infer] <- LogisticPoints(infer, fitL)
     }
     calcIC <- -log(calculatedP) / log(2)
     calcIC

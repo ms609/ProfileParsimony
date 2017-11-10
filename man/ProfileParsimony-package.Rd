@@ -97,8 +97,10 @@ contrast.matrix <- matrix(data=c(
   1,1,1  # ? | {01-}
 ), ncol=3, byrow=TRUE); # ncol should correspond to the number of columns in the matrix
 dimnames(contrast.matrix) <- list(
-  c(0, 1, '-', 'A', '+', '?'), # A list of the tokens corresponding to each rows in the contrast matrix
-  c(0, 1, '-') # A list of the character-states corresponding to the columns in the contrast matrix
+  c(0, 1, '-', 'A', '+', '?'), # A list of the tokens corresponding to each row
+                               # in the contrast matrix
+  c(0, 1, '-') # A list of the character-states corresponding to the columns 
+               # in the contrast matrix
 )
 
 ## To see the annotated contrast matrix, type
@@ -118,7 +120,8 @@ tree <- read.nexus('treename.nex')
 ## or generate a random starting tree, 
 tree <- RandomTree(my.phyDat)
 ## or use neighbour joining to generate a starting tree
-tree <- root(nj(dist.hamming(my.phyDat)), my.outgroup, resolve.root=TRUE); tree$edge.length <- NULL;
+tree <- root(nj(dist.hamming(my.phyDat)), my.outgroup, resolve.root=TRUE)
+tree$edge.length <- NULL;
 
 ## View the starting tree by typing
 plot(tree)
