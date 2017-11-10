@@ -42,7 +42,6 @@
 #' @examples 
 #'   data(referenceTree)
 #'   plot(referenceTree)
-#'   FitchInfoFast(referenceTree, congreveLamsdellMatrices[[17]])
 #' 
 #' @source \url{http://dx.doi.org/10.1111/pala.12236}
 "referenceTree"

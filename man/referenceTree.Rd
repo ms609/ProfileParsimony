@@ -18,7 +18,6 @@ Congreve & Lamsdell (2016)
 \examples{
   data(referenceTree)
   plot(referenceTree)
-  FitchInfoFast(referenceTree, congreveLamsdellMatrices[[17]])
 
 }
 \references{

@@ -23,7 +23,9 @@ Calculate a tree's Profile Parsimony score with a given dataset, after Faith and
 \examples{
   data(referenceTree)
   data(congreveLamsdellMatrices)
-  dataset <- PrepareDataProfile(congreveLamsdellMatrices[[42]])
+  # In actual use, the dataset should be prepared with a much higher precision: try 1e+06?
+  # Of course, gaining higher precision takes substantially longer.
+  dataset <- PrepareDataProfile(congreveLamsdellMatrices[[42]], precision=1e+03)
   ProfileScore(referenceTree, dataset)
 
 }
