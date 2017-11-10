@@ -251,13 +251,13 @@ WithOneExtraStep <- function (split) {
     prod(sum( # Branch unambiguously split along first group
       vapply(1:(omitted.tips - 1), function (first.group) { # For each way of splitting up the omitted tips, e.g. 1|16, 2|15, 3|14, etc
         choose(omitted.tips, first.group) * 
-        n.rooted(first.group) * n.rooted(omitted.tips - first.group)
+        NRooted(first.group) * NRooted(omitted.tips - first.group)
       }, double(1))
     ) / 2, backbone.attachments, backbones) + prod(
     # Second group added adjacent to first group, thus new edge could belong to the backbone or the omitted tip group
     sum(vapply(1:(omitted.tips - 1), function (first.group) { # For each way of splitting up the omitted tips, e.g. 1|16, 2|15, 3|14, etc
         choose(omitted.tips, first.group) * 
-        n.rooted(first.group) * n.rooted(omitted.tips - first.group) # backbone tips have already been split - when we selected a branch
+        NRooted(first.group) * NRooted(omitted.tips - first.group) # backbone tips have already been split - when we selected a branch
       }, double(1))) / 2,
     backbones,
     backbone.edges,
