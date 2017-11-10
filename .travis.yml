@@ -5,7 +5,7 @@ r:
 cache: packages
 warnings_are_errors: true
 r_check_args: --as-cran
-   
+
 git:
   depth: 5
 
