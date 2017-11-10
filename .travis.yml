@@ -13,10 +13,12 @@ r_binary_packages:
  - testthat
 
 r_packages:
+ - covr
  - devtools
+ - memoise
+ - R.cache
  - roxygen2
 # - TreeSearch
- - covr
 
 r_github_packages:
  - ms609/TreeSearch
@@ -28,6 +30,7 @@ install:
  - R -e "install.packages('phangorn')"
  - R -e "install.packages('testthat')"
  - R -e "install.packages('roxygen2')"
+ - R -e "install.packages('R.cache')"
  - R -e "devtools::install_github('ms609/TreeSearch')"
  - R -e "devtools::install_github('ms609/inapplicable')"
  - R -e "devtools::document()"
