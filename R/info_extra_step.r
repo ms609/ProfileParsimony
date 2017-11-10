@@ -1,23 +1,3 @@
-#' Information content per step
-#' @template splitsParam
-#' @param maxIter number of iterations to use when estimating concavity constant
-#' @template warnParam
-#' @export
-ICPerStep <- function(splits, maxIter, warn=TRUE) ICS(min(splits), max(splits), maxIter, warn)
-
-#' @describeIn ICPerStep Memoized calculating function
-#'
-#' @param a \code{min(splits)}.
-#' @param b \code{max(splits)}.
-#' @param m \code{maxIter}.
-#' @template warnParam
-#'
-#' @importFrom R.cache addMemoization
-#' @keywords internal
-#' @export
-ICS <- addMemoization(function(a, b, m, warn=TRUE)
-                        ICSteps(c(rep(1, a), rep(2, b)), maxIter=m, warn=warn))
-
 #' Random trees
 #' @importFrom memoise memoise
 #' @export
@@ -211,65 +191,46 @@ ICSteps <- function (char, ambiguousToken = 0, expectedMinima = 25, maxIter = 10
     # cat(c(round(analyticIc0, 3), 'bits @ 0 extra steps;', round(analyticIc1, 3),
     #    '@ 1; attempting', nIter, 'iterations.\n'))
   }
-  #######trees <- RandomTrees(nIter, charLen)  ## TODO make more efficient by randomising trees that are already in postorder
-  
-  # Initialize morphy object 
-  morphyObj <- mpl_new_Morphy()
-  if(mpl_init_Morphy(charLen, 1, morphyObj) -> error) {
-    stop("Error ", mpl_translate_error(error), " in mpl_init_Morphy")
-  }
-  if(mpl_attach_rawdata(paste0(c(char, ';'), collapse=''), morphyObj) -> error) {
-    stop("Error ", mpl_translate_error(error), " in mpl_attach_rawdata")
-  }
-  if(mpl_set_num_internal_nodes(charLen - 1L, morphyObj) -> error) { # One is the 'dummy root'
-    stop("Error ", mpl_translate_error(error), " in mpl_set_num_internal_nodes")
-  }
-  if (mpl_set_parsim_t(1, 'FITCH', morphyObj) -> error) {
-      stop("Error ", mpl_translate_error(min(error)), "in mpl_set_parsim_t")
-  }
-  if (mpl_set_charac_weight(1, 1, morphyObj) -> error) {
-    stop("Error ", mpl_translate_error(min(error)), "in mpl_set_charac_weight")
-  }
-  if(mpl_apply_tipdata(morphyObj) -> error) {
-    stop("Error ", mpl_translate_error(error), "in mpl_apply_tipdata")
-  }
-  class(morphyObj) <- 'morphyPtr'
+
+  morphyObj <- SingleCharMorphy(char)
   on.exit(morphyObj <- UnloadMorphy(morphyObj))
-  
-  steps <- vapply(maxIter, function (xx) RandomTreeScore(charLen, morphyObj), integer(1))
-
-
-##  steps <- vapply(trees, function (tree, char) {
-##    # TODO make enormously faster by loading the data once, then running morphyScore on 
-##    # a heap of trees.  We can also win by generating random edge matrices, rather than
-##    # entire trees.
-##    tree <- Postorder(tree)
-##    treeEdge <- tree$edge
-##    tipLabel <- tree$tip.label
-##    parent <- treeEdge[, 1]
-##    child  <- treeEdge[, 2]
-##    # Return:
-##    C_Fitch_Score(char[tipLabel, ], nChar=1L, parent, child, nEdge, weight=1L,
-##        maxNode, nTip=charLen)
-##  }, double (1), char)
+  steps <- vapply(logical(maxIter), function (xx) RandomTreeScore(charLen, morphyObj), integer(1))
 
   analyticSteps <- nIter * c(nNoExtraSteps) / NUnrooted(sum(split))
   #analyticSteps <- nIter * c(nNoExtraSteps, nOneExtraStep) / NUnrooted(sum(split))
+  
   names(analyticSteps) <- minSteps
   #names(analyticSteps) <- minSteps + 0:1
-  ##analyticSteps
+  
   tabSteps <- table(steps[steps > (minSteps + 0)]) # Quicker than table(steps)[-0]
   #tabSteps <- table(steps[steps > (minSteps + 1)])
+  
   tabSteps <- c(analyticSteps, tabSteps * (nIter - sum(analyticSteps)) / sum(tabSteps))
   pSteps <- tabSteps / sum(tabSteps)
   
   return(pSteps)
-  #ICSteps  <- -log(cumsum(pSteps)) / log(2)
-  #return(rbind(tabSteps, pSteps, ICSteps))
-  #summry <- double(length(ICSteps))
-  #summry[1:2] <- c(mean(steps), var(steps))
-  #return(rbind(tabSteps, pSteps, ICSteps, summry))
 }
+
+#' @describeIn ICPerStep Memoized calculating function
+#'
+#' @param a \code{min(splits)}.
+#' @param b \code{max(splits)}.
+#' @param m \code{maxIter}.
+#' @template warnParam
+#'
+#' @importFrom R.cache addMemoization
+#' @keywords internal
+#' @export
+ICS <- addMemoization(function(a, b, m, warn=TRUE)
+                        ICSteps(c(rep(1, a), rep(2, b)), maxIter=m, warn=warn))
+
+#' Information content per step
+#' @template splitsParam
+#' @param maxIter number of iterations to use when estimating concavity constant
+#' @template warnParam
+#' @export
+ICPerStep <- function(splits, maxIter, warn=TRUE) ICS(min(splits), max(splits), maxIter, warn)
+
 
 #' Numer of trees with one extra step
 #' @export
