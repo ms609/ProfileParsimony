@@ -4,7 +4,7 @@
 \alias{InfoAmounts}
 \title{Amount of information in each character}
 \usage{
-InfoAmounts(dataset, precision = 4e+05, warn = TRUE)
+InfoAmounts(dataset, precision = 1e+06, warn = TRUE)
 }
 \arguments{
 \item{precision}{number of random trees to generate when calculating Profile curves}
