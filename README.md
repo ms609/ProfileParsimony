@@ -8,16 +8,17 @@
 
 # ProfileParsimony
 
-ProfileParsimony is an R package, built on Phangorn, to implement the Profile Parsimony approach
+ProfileParsimony was an R package, built on Phangorn, to implement the Profile Parsimony approach
 to character weighting introduced by Faith and Trueman (2001).  It also provides an implementation
 of Successive Approximations weighting (Farris 1969).
 
 It incorporates modifications to phangorn that improve the speed of phylogenetic analysis, 
 and adds support for TBR rearrangements.
 
-A stable version of this package is available through the CRAN repository.
-Alternatively, you can install the latest development version of the package into R thus:
+It has now been integrated into the more capable package [TreeSearch](https://github.com/ms609/TreeSearch).
 
+
+It is still possible to install the standalone package thus:
 ```r
 # Install the devtools package from CRAN
 install.packages('devtools')
